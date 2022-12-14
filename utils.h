@@ -3,25 +3,24 @@
 #include "utils.h"
 
 namespace hack {
+	static DWORD pid;
+	static DWORD64 Base;
 
-	DWORD pid;
-	DWORD64 Base;
+	static DWORD64 WorldPTR;
+	static DWORD64 BlipPTR;
+	static DWORD64 PlayerPTR;
+	static DWORD64 GlobalPTR;
+	static DWORD64 Carspawn;
+	static DWORD64 ObjectSpawn;
 
-	DWORD64 WorldPTR;
-	DWORD64 BlipPTR;
-	DWORD64 PlayerPTR;
-	DWORD64 GlobalPTR;
-	DWORD64 Carspawn;
-	DWORD64 ObjectSpawn;
-
-	struct module
+	static struct module
 	{
 		DWORD64 dwBase, dwSize;
 	};
 
-	module TargetModule;
-	HANDLE TargetProcess;
-	DWORD64  TargetId;
+	static hack::module TargetModule;
+	static HANDLE TargetProcess;
+	static DWORD64  TargetId;
 
 	uintptr_t GetModuleBaseAddress(DWORD procId, const wchar_t* modName);
 	uintptr_t FindPointer(HANDLE hproc, uintptr_t ptr, std::vector<unsigned int> offsets);
@@ -41,9 +40,4 @@ namespace hack {
 	bool MemoryCompare(const BYTE* bData, const BYTE* bMask, const char* szMask);
 	DWORD64 FindSignature(DWORD64 start, DWORD64 size, const char* sig, const char* mask);
 }
-
-class utils
-{
-
-};
 
