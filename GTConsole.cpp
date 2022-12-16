@@ -1,5 +1,5 @@
-#include "framework.h"
-#include "utils.h"
+#include "common.h"
+#include "GTAModule.h"
 
 // our safeguard
 bool checkRunning() {
@@ -20,42 +20,64 @@ int main()
 {
 	if (checkRunning())
 	{
-		MessageBoxW(NULL, L"Another instance is already running!\nOnly one instance is allowed to running", L"Error", NULL);
-		return;
+		MessageBox(NULL, L"Another instance is already running!\nOnly one instance is allowed to running", L"Error", NULL);
+		return 1;
 	}
 	SetConsoleTitle(L"HWAGYUhVBUY78916786138"); // random jibberish :v
-	 
-	HWND hWnd = FindWindowA(0, "Grand Theft Auto V"); // find window
-	GetWindowThreadProcessId(hWnd, &hack::pid);
-	HANDLE pHandle = OpenProcess(PROCESS_ALL_ACCESS, FALSE, hack::pid); // give administrative rights to read and write data
-	hack::Base = hack::GetModuleBaseAddress(hack::pid, L"GTA5.exe"); // get module base addr
 	
-	// Signature Here
-	LPCSTR SignatureWorldPTR = "\x48\x8B\x05\xCC\xCC\x45\xCC\xCC\x48\x8B\x48\x08\x48\x85\xC9\x74\x07";
-	LPCSTR MaskWorldPTR = "xxx??x??xxxxxxxxx";
+	Beep(200, 400);
 
-	LPCSTR SignatureBlipPTR = "\x4C\x8D\x05\xCC\xCC\x0F\xB7\xC1";
-	LPCSTR MaskBlipPTR = "xxx??xxx";
+	try
+	{
+		auto pointers_instance = std::make_unique<Pointers>();
 
-	LPCSTR SignatureGlobalPTR = "\x4C\x8D\x05\xCC\xCC\x4D\x8B\x08\x4D\x85\xC9\x74\x11";
-	LPCSTR MaskGlobalPTR = "xxx??xxxxxxxx";
+		auto gta_instance = std::make_unique<GTAModule>();
 
-	LPCSTR SignatureLocalScriptsPTR = "\x48\x8B\x05\xCC\xCC\x8B\xCF\x48\x8B\x0C\xC8\x39\x59\x68";
-	LPCSTR MaskLocalScriptsPTR = "xxx??xxxxxxxxx";
+		std::cout << "WorldPTR:          " << std::hex << g_pointers->WorldPTR << "\n";
+		std::cout << "BlipPTR:           " << std::hex << g_pointers->BlipPTR << "\n";
+		std::cout << "ReplayInterfacePTR:" << std::hex << g_pointers->ReplayInterfacePTR << "\n";
+		std::cout << "LocalScriptsPTR:   " << std::hex << g_pointers->LocalScriptsPTR << "\n";
 
-	LPCSTR SignatureReplayInterfacePTR = "\x48\x8D\x0D\xCC\xCC\x48\x8B\xD7\xE8\xCC\xCC\x48\x8D\x0D\xCC\xCC\x8A\xD8\xE8";
-	LPCSTR MaskLocalReplayInterfacePTR = "xxx??xxxx??xxx??xxx";
+		std::cout << "GlobalPTR:         " << std::hex << g_pointers->GlobalPTR << "\n";
+		std::cout << "PlayerCountPTR:    " << std::hex << g_pointers->PlayerCountPTR << "\n";
+		std::cout << "PickupDataPTR:     " << std::hex << g_pointers->PickupDataPTR << "\n";
+		std::cout << "WeatherADDR:       " << std::hex << g_pointers->WeatherADDR << "\n";
+		std::cout << "SettingsPTRs:      " << std::hex << g_pointers->SettingsPTRs << "\n";
+		std::cout << "AimCPedPTR:        " << std::hex << g_pointers->AimCPedPTR << "\n";
+		std::cout << "FriendlistPTR:     " << std::hex << g_pointers->FriendlistPTR << "\n";
+		std::cout << "ThermalADDR:       " << std::hex << g_pointers->ThermalADDR << "\n";
+		std::cout << "NightvisionADDR:   " << std::hex << g_pointers->NightvisionADDR << "\n";
+		std::cout << "BlackoutADDR:      " << std::hex << g_pointers->BlackoutADDR << "\n";
 
-	hack::module mod = hack::GetModule(L"GTA5.exe");
+		while (true && gta5->is_running())
+		{
+			if (GetAsyncKeyState(VK_END) & 0x1) { Beep(200, 400); break; }
 
-	DWORD64 TempWorldPTR = hack::FindSignature(mod.dwBase, mod.dwSize, SignatureWorldPTR, MaskWorldPTR);
-	hack::WorldPTR = TempWorldPTR + hack::readInteger(pHandle, TempWorldPTR + 3) + 7;
+			if (GetAsyncKeyState(VK_F6) & 0x8) {
+				gta5->to_waypoint(gta5->get_local_ped());
+			}
 
-	DWORD64 TempBlipPTR = hack::FindSignature(mod.dwBase, mod.dwSize, SignatureBlipPTR, MaskBlipPTR);
-	hack::BlipPTR = TempBlipPTR + hack::readInteger(pHandle, TempBlipPTR + 3) + 7;
+			std::this_thread::sleep_for(std::chrono::milliseconds(10));
+		}
 
-	DWORD64 TempGlobalPTR = hack::FindSignature(mod.dwBase, mod.dwSize, SignatureGlobalPTR, MaskGlobalPTR);
-	hack::GlobalPTR = TempGlobalPTR + hack::readInteger(pHandle, TempGlobalPTR + 3) + 7;
+		gta_instance.reset();
 
+		pointers_instance.reset();
 
+	}
+	catch (const std::exception& err)
+	{
+		std::cout << err.what() << std::endl;
+
+		MessageBox(
+			NULL,
+			L"Exiting Now...",
+			L"Error",
+			MB_ICONSTOP | MB_ICONERROR | MB_ICONHAND
+		);
+
+		exit(1);
+	}
+
+	return 0;
 }
