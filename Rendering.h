@@ -16,11 +16,11 @@ namespace nsRendering {
 	static inline LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
 };
 
-class Rendering
+class Rendering final
 {
 public:
-	Rendering() noexcept;
-	~Rendering() noexcept;
+	Rendering();
+	~Rendering();
 
 public:
 	ID3D11Device* g_pd3dDevice = NULL;
@@ -31,6 +31,19 @@ public:
 	bool is_running = false;
 
 	HWND hWnd = nullptr;
+	WNDCLASSEXW wc{};
+
+	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+
+public:
+	void on_init();
+	void on_tick();
+	void on_destroy();
+
+	bool CreateDeviceD3D(HWND hWnd);
+	void CleanupDeviceD3D();
+	void CreateRenderTarget();
+	void CleanupRenderTarget();
 };
 
 inline Rendering* g_rendering = nullptr;

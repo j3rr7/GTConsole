@@ -52,6 +52,8 @@ int main()
 		std::cout << "NightvisionADDR:   " << std::hex << g_pointers->NightvisionADDR << "\n";
 		std::cout << "BlackoutADDR:      " << std::hex << g_pointers->BlackoutADDR << "\n";*/
 
+		gui_instance->on_init();
+
 		while (true /*&& gta5->is_running()*/)
 		{
 			if (GetAsyncKeyState(VK_END) & 0x1) { break; }
@@ -59,9 +61,11 @@ int main()
 			//if (GetAsyncKeyState(VK_F6) & 0x8000) {
 			//	gta5->to_waypoint(gta5->get_local_ped());
 			//}
-
+			gui_instance->on_tick();
 			std::this_thread::sleep_for(std::chrono::milliseconds(10));
 		}
+
+		gui_instance->on_destroy();
 
 		gui_instance.reset();
 
