@@ -69,6 +69,10 @@ bool GTAModule::ped_is_in_vehicle(int64_t ped)
 
 void GTAModule::entity_set_position(int64_t entity, Vector3 pos)
 {
+    if (ped_is_in_vehicle(entity))
+    {
+        entity = entity + 0xD10;
+    }
     writeMemory<Vector3>(entity + 0x30, { 0x50 }, pos);
     writeMemory<Vector3>(entity + 0x90, {}, pos);
 }
@@ -77,6 +81,17 @@ void GTAModule::to_waypoint(int64_t ped)
 {
     int64_t blip;
     if (!get_blip(blip, { 8 }, { 84 })) return;
+    int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
+    Vector3 pos = get_blip_pos(blip);
+    pos.z += 1;
+    if (pos.z == 21.0) pos.z = -225.0;
+    entity_set_position(entity, pos);
+}
+
+void GTAModule::to_objective(int64_t ped)
+{
+    int64_t blip;
+    if (!get_blip(blip, { 8 }, { 40, 48 })) return;
     int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
     Vector3 pos = get_blip_pos(blip);
     pos.z += 1;
