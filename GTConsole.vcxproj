@@ -163,6 +163,8 @@
     <ClInclude Include="Pattern.h" />
     <ClInclude Include="Pointers.h" />
     <ClInclude Include="Rendering.h" />
+    <ClInclude Include="Settings.h" />
+    <ClInclude Include="ThreadPool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

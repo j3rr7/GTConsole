@@ -13,7 +13,7 @@ Memory::Memory(const wchar_t name[MAX_PATH]) :
 
 	MODULEENTRY32 me32;
 	if (listSProcessModules(m_pid, name, &me32) == FALSE)
-		throw std::exception("Failed to get model info");
+		throw std::exception("Failed to get modules info");
 
 	p_base_address = (uintptr_t)me32.modBaseAddr;
 	p_size = me32.modBaseSize;
