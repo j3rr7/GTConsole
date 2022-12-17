@@ -106,6 +106,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(ProjectDir)imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -122,6 +123,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(ProjectDir)imgui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -133,10 +135,11 @@
   <ItemGroup>
     <ClCompile Include="common.cpp" />
     <ClCompile Include="GTAModule.cpp" />
-    <ClCompile Include="GTConsole.cpp" />
+    <ClCompile Include="main.cpp" />
     <ClCompile Include="Memory.cpp" />
     <ClCompile Include="Pattern.cpp" />
     <ClCompile Include="Pointers.cpp" />
+    <ClCompile Include="Rendering.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -144,6 +147,7 @@
     <ClInclude Include="Memory.h" />
     <ClInclude Include="Pattern.h" />
     <ClInclude Include="Pointers.h" />
+    <ClInclude Include="Rendering.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

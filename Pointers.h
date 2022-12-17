@@ -4,7 +4,7 @@
 class Pointers
 {
 public: 
-	explicit Pointers();
+    explicit Pointers();
 	~Pointers();
 
 public:
@@ -13,6 +13,7 @@ public:
     uint64_t ReplayInterfacePTR;
     uint64_t LocalScriptsPTR;
     uint64_t GlobalPTR;
+    /*
     uint64_t PlayerCountPTR;
     uint64_t PickupDataPTR;
     uint64_t WeatherADDR;
@@ -22,6 +23,7 @@ public:
     uint64_t ThermalADDR;
     uint64_t NightvisionADDR;
     uint64_t BlackoutADDR;
+    */
 };
 
-inline Pointers* g_pointers;
+inline Pointers* g_pointers = nullptr;

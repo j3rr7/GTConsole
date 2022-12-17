@@ -49,7 +49,7 @@ bool GTAModule::get_blip(int64_t& blip, std::vector<int> icons, std::vector<int>
 
 Vector3 GTAModule::get_blip_pos(int64_t blip)
 {
-	return  readMemory<Vector3>(blip + 0x10);
+	return readMemory<Vector3>(blip + 0x10);
 }
 
 int64_t GTAModule::get_local_ped()
@@ -64,7 +64,7 @@ int64_t GTAModule::ped_get_current_vehicle(int64_t ped)
 
 bool GTAModule::ped_is_in_vehicle(int64_t ped)
 {
-    return readMemory<byte>(ped + 0xE52) == 0 ? false : true;
+    return readMemory<int64_t>(ped + 0xE52) == 0 ? false : true;
 }
 
 void GTAModule::entity_set_position(int64_t entity, Vector3 pos)

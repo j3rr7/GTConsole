@@ -7,7 +7,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="GTConsole.cpp">
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="common.cpp">
@@ -25,6 +25,9 @@
     <ClCompile Include="Pointers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Rendering.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -40,6 +43,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="Pointers.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Rendering.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
