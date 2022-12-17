@@ -12,7 +12,9 @@
 #define WINDOW_WIDTH 1280
 #define WINDOW_HEIGHT 720
 
-LRESULT WINAPI WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+namespace nsRendering {
+	static inline LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
+};
 
 class Rendering
 {
@@ -29,9 +31,6 @@ public:
 	bool is_running = false;
 
 	HWND hWnd = nullptr;
-
-private:
-	static inline Rendering* g_rendering;
 };
 
 inline Rendering* g_rendering = nullptr;

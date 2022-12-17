@@ -1,5 +1,5 @@
 #include "common.h"
-#include "GTAModule.h"
+//#include "GTAModule.h"
 #include "Rendering.h"
 
 // our safeguard
@@ -52,7 +52,7 @@ int main()
 		std::cout << "NightvisionADDR:   " << std::hex << g_pointers->NightvisionADDR << "\n";
 		std::cout << "BlackoutADDR:      " << std::hex << g_pointers->BlackoutADDR << "\n";*/
 
-		while (true && gta5->is_running())
+		while (true /*&& gta5->is_running()*/)
 		{
 			if (GetAsyncKeyState(VK_END) & 0x1) { break; }
 
