@@ -154,15 +154,56 @@ void Rendering::dx_menu()
 {
     ImGui::Text("Hello World");
 
-    if (ImGui::Button("Click Me"))
+    if (ImGui::CollapsingHeader("Online Vehicle Spawn"))
     {
-        g_thread_pool->enqueue([] {
-            int i = 20;
-            std::cout << "Local: " << i << "\n";
-            });
+        if (ImGui::Button("Spawn Adder"))
+        {
+            g_thread_pool->enqueue([] {
+                Vector3 ped_pos = gta5->get_current_location(gta5->get_local_ped());
+                uintptr_t modelHash = gta5->joaat("ADDER");
+                Vector2 heading = gta5->readMemory<Vector2>(gta5->get_local_ped() + 0x30, { 0x20 });
+                Vector3 new_pos{
+                    ped_pos.x - (heading.y * 5.f),
+                    ped_pos.y + (heading.x),
+                    ped_pos.z + 0.5f
+                };
+                gta5->SG<float>(2694560 + 7 + 0, ped_pos.x);
+                gta5->SG<float>(2694560 + 7 + 1, ped_pos.y);
+                gta5->SG<float>(2694560 + 7 + 2, ped_pos.z);
+                gta5->SG<uintptr_t>(2694560 + 27 + 66, modelHash);
+                gta5->SG<int>(2694560 + 27 + 28, 1);
+                gta5->SG<int>(2694560 + 27 + 60, 1);
+                gta5->SG<int>(2694560 + 27 + 95, 14);
+                gta5->SG<int>(2694560 + 27 + 94, 2);
+                gta5->SG<int>(2694560 + 5, 1);
+                gta5->SG<int>(2694560 + 2, 1);
+                gta5->SG<int>(2694560 + 3, 0);
+                gta5->SG<int>(2694560 + 27 + 74, 1);
+                gta5->SG<int>(2694560 + 27 + 75, 1);
+                gta5->SG<int>(2694560 + 27 + 76, 0);
+                gta5->SG<int>(2694560 + 27 + 60, 4030726305);
+                gta5->SG<int>(2694560 + 27 + 5, -1);
+                gta5->SG<int>(2694560 + 27 + 6, -1);
+                gta5->SG<int>(2694560 + 27 + 7, -1);
+                gta5->SG<int>(2694560 + 27 + 8, -1);
+                gta5->SG<int>(2694560 + 27 + 19, 4);
+                gta5->SG<int>(2694560 + 27 + 21, 4);
+                gta5->SG<int>(2694560 + 27 + 22, 3);
+                gta5->SG<int>(2694560 + 27 + 23, 3);
+                gta5->SG<int>(2694560 + 27 + 24, 58);
+                gta5->SG<int>(2694560 + 27 + 26, 5);
+                gta5->SG<int>(2694560 + 27 + 27, 1);
+                gta5->SG<int>(2694560 + 27 + 65, 2);
+                gta5->SG<int>(2694560 + 27 + 69, -1);
+                gta5->SG<int>(2694560 + 27 + 33, -1);
+                gta5->SG<int>(2694560 + 27 + 25, 8);
+                gta5->SG<int>(2694560 + 27 + 19, -1);
+                });
+        }
+        
     }
 
-    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+    ImGui::Text("Frame %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -179,9 +220,9 @@ LRESULT __stdcall nsRendering::WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARA
         
         if (g_rendering->g_pd3dDevice != NULL && wParam != SIZE_MINIMIZED)
         {
-            //g_rendering->CleanupRenderTarget();
+            g_rendering->CleanupRenderTarget();
             g_rendering->g_pSwapChain->ResizeBuffers(0, (UINT)LOWORD(lParam), (UINT)HIWORD(lParam), DXGI_FORMAT_UNKNOWN, 0);
-            //g_rendering->CreateRenderTarget();
+            g_rendering->CreateRenderTarget();
         }
         return 0;
     case WM_SYSCOMMAND:

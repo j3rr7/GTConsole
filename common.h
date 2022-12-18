@@ -18,5 +18,6 @@
 #include <sstream>
 
 struct Vector3 { float x; float y; float z; };
+struct Vector2 { float x; float y; };
 
 #define HEX_TO_UPPER(value) "0x" << std::hex << std::uppercase << (DWORD64)value << std::dec << std::nouppercase

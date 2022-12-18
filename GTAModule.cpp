@@ -95,6 +95,12 @@ void GTAModule::to_objective(int64_t ped)
     entity_set_position(entity, pos);
 }
 
+Vector3 GTAModule::get_current_location(int64_t ped)
+{
+    int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
+    return readMemory<Vector3>(entity + 0x30, { 0x50 });
+}
+
 uint32_t GTAModule::joaat(std::string str)
 {
     unsigned int Uint32 = 0xffffffff;

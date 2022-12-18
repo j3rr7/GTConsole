@@ -22,18 +22,16 @@ int main()
 {
 	try
 	{
-		// Check If Another Instance is running
 		if (checkRunning())
 		{
 			MessageBox(NULL, L"Another instance is already running!\nOnly one instance is allowed to running", L"Error", NULL);
 			return 1;
 		}
 
-		// Set Console Title
 		SetConsoleTitle(L"Log Console");
 
 		std::cout << "[+] Reading Settings...\n";
-		auto thread_pool = std::make_unique<ThreadPool>(2);
+		auto thread_pool = std::make_unique<ThreadPool>(4);
 		auto config_instance = std::make_unique<Config>("settings.ini");
 		
 		bool isRunning = true;
@@ -44,11 +42,13 @@ int main()
 		auto game_thread = [&]
 		{
 			// Log Game Content
+			std::cout << "======= DEBUG =======\n";
 			std::cout << "WorldPTR:          " << std::hex << g_pointers->WorldPTR << "\n";
 			std::cout << "BlipPTR:           " << std::hex << g_pointers->BlipPTR << "\n";
 			std::cout << "ReplayInterfacePTR:" << std::hex << g_pointers->ReplayInterfacePTR << "\n";
 			std::cout << "LocalScriptsPTR:   " << std::hex << g_pointers->LocalScriptsPTR << "\n";
 			std::cout << "GlobalPTR:         " << std::hex << g_pointers->GlobalPTR << "\n";
+			std::cout << "======= END DEBUG =======\n";
 
 			//std::cout << "PlayerCountPTR:    " << std::hex << g_pointers->PlayerCountPTR << "\n";
 			//std::cout << "PickupDataPTR:     " << std::hex << g_pointers->PickupDataPTR << "\n";
