@@ -12,6 +12,10 @@
 #include <future>
 #include <experimental/coroutine>
 #include <mutex>
+#include <fstream>
+#include <string>
+#include <unordered_map>
+#include <sstream>
 
 struct Vector3 { float x; float y; float z; };
 

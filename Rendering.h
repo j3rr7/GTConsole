@@ -9,8 +9,8 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
-#define WINDOW_WIDTH 1280
-#define WINDOW_HEIGHT 720
+#define WINDOW_WIDTH 960
+#define WINDOW_HEIGHT 680
 
 namespace nsRendering {
 	static inline LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -44,6 +44,9 @@ public:
 	void CleanupDeviceD3D();
 	void CreateRenderTarget();
 	void CleanupRenderTarget();
+
+private:
+	void dx_menu();
 };
 
 inline Rendering* g_rendering = nullptr;

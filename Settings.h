@@ -1,7 +1,5 @@
 #pragma once
-#include <fstream>
-#include <string>
-#include <unordered_map>
+#include "common.h"
 
 class InIParser final {
 public:
@@ -63,9 +61,15 @@ private:
     std::unordered_map<std::string, std::string> config_;
 };
 
+class Config;
+inline Config* g_config = nullptr;
+
 class Config {
 public:
-    Config(const std::string& file_name) : parser_(file_name) {}
+    Config(const std::string& file_name) : parser_(file_name) {
+        g_config = this;
+    }
+    ~Config() { g_config = nullptr; }
 
     std::string GetValue(const std::string& section, const std::string& key) const {
         return parser_.GetValue(section, key);
@@ -78,6 +82,20 @@ public:
     void Save(const std::string& file_name) {
         parser_.Save(file_name);
     }
+
+private:
+    bool stringToBool(const std::string& str) {
+        std::string lowercaseStr = str;
+        std::transform(lowercaseStr.begin(), lowercaseStr.end(), lowercaseStr.begin(), ::tolower);
+        std::istringstream stream(lowercaseStr);
+        bool value;
+        stream >> std::boolalpha >> value;
+        return value;
+    }
+
+public:
+    bool is_console_hidden = false;
+
 private:
     InIParser parser_;
 };

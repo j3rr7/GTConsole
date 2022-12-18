@@ -1,7 +1,5 @@
 #include "Rendering.h"
 
-#include "imgui.h"
-
 Rendering::Rendering()
 {
 	is_running = true;
@@ -59,18 +57,24 @@ void Rendering::on_tick()
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
 
-    ImGui::ShowDemoWindow();
-
+#ifdef IMGUI_HAS_VIEWPORT
+    ImGuiViewport* viewport = ImGui::GetMainViewport();
+    ImGui::SetNextWindowPos(viewport->GetWorkPos());
+    ImGui::SetNextWindowSize(viewport->GetWorkSize());
+    ImGui::SetNextWindowViewport(viewport->ID);
+#else 
+    ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
+    ImGui::SetNextWindowSize(ImGui::GetIO().DisplaySize);
+#endif
+    ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
     {
-        ImGui::Begin("Options Window");
-        ImGui::Text("Hello World");
+        ImGui::Begin("Options Window", nullptr,ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize);
 
-        if (ImGui::Button("Click Me"))
-            std::cout << "Button Clicked" << "\n";
+        dx_menu();
 
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
         ImGui::End();
     }
+    ImGui::PopStyleVar(2);
 
     // Rendering
     ImGui::Render();
@@ -144,6 +148,16 @@ void Rendering::CreateRenderTarget()
 void Rendering::CleanupRenderTarget()
 {
     if (g_mainRenderTargetView) { g_mainRenderTargetView->Release(); g_mainRenderTargetView = NULL; }
+}
+
+void Rendering::dx_menu()
+{
+    ImGui::Text("Hello World");
+
+    if (ImGui::Button("Click Me"))
+        std::cout << "Button Clicked" << "\n";
+
+    ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
 
 extern IMGUI_IMPL_API LRESULT ImGui_ImplWin32_WndProcHandler(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
