@@ -77,7 +77,7 @@ int main()
 				}
 
 				if (GetAsyncKeyState(VK_F7) & 0x8000) {
-					gta5->to_waypoint(gta5->get_local_ped());
+					gta5->to_objective(gta5->get_local_ped());
 				}
 				// Keybinds End
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
