@@ -31,15 +31,14 @@ int main()
 
 		// Set Console Title
 		SetConsoleTitle(L"Log Console");
-		
-		ThreadPool pool(2);
 
 		std::cout << "[+] Reading Settings...\n";
+		auto thread_pool = std::make_unique<ThreadPool>(2);
 		auto config_instance = std::make_unique<Config>("settings.ini");
 		
-
 		bool isRunning = true;
 
+		/*
 		{
 			auto gta_instance = std::make_unique<GTAModule>();
 			auto pointers_instance = std::make_unique<Pointers>();
@@ -85,6 +84,7 @@ int main()
 
 			pool.enqueue(game_thread);
 		}
+		*/
 
 		auto gui_instance = std::make_unique<Rendering>();
 		auto rendering_thread = [&]
@@ -102,7 +102,7 @@ int main()
 
 			gui_instance.reset();
 		};
-		pool.enqueue(rendering_thread);
+		thread_pool->enqueue(rendering_thread);
 
 		while (isRunning) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }	
 

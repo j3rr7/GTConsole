@@ -155,7 +155,12 @@ void Rendering::dx_menu()
     ImGui::Text("Hello World");
 
     if (ImGui::Button("Click Me"))
-        std::cout << "Button Clicked" << "\n";
+    {
+        g_thread_pool->enqueue([] {
+            int i = 20;
+            std::cout << "Local: " << i << "\n";
+            });
+    }
 
     ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }

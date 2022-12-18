@@ -8,6 +8,9 @@
 #include <mutex>
 #include <condition_variable>
 
+class ThreadPool;
+inline ThreadPool* g_thread_pool;
+
 class ThreadPool {
 public:
     using Task = std::function<void()>;
@@ -33,6 +36,7 @@ public:
                 }
                 });
         }
+        g_thread_pool = this;
     }
 
     ~ThreadPool()
@@ -45,6 +49,7 @@ public:
         for (auto& worker : workers_) {
             worker.join();
         }
+        g_thread_pool = nullptr;
     }
 
     template <typename T>
