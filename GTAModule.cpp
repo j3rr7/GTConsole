@@ -64,15 +64,11 @@ int64_t GTAModule::ped_get_current_vehicle(int64_t ped)
 
 bool GTAModule::ped_is_in_vehicle(int64_t ped)
 {
-    return readMemory<int64_t>(ped + 0x14C7) == 0 ? false : true;
+    return readMemory<uint8_t>(ped + 0xE32) == 0 ? false : true;
 }
 
 void GTAModule::entity_set_position(int64_t entity, Vector3 pos)
 {
-    if (ped_is_in_vehicle(entity))
-    {
-        entity = entity + 0xD10;
-    }
     writeMemory<Vector3>(entity + 0x30, { 0x50 }, pos);
     writeMemory<Vector3>(entity + 0x90, {}, pos);
 }
