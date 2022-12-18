@@ -59,12 +59,12 @@ int64_t GTAModule::get_local_ped()
 
 int64_t GTAModule::ped_get_current_vehicle(int64_t ped)
 {
-    return readMemory<int64_t>(ped + 0xD30);
+    return readMemory<int64_t>(ped + 0xD10);
 }
 
 bool GTAModule::ped_is_in_vehicle(int64_t ped)
 {
-    return readMemory<int64_t>(ped + 0xE52) == 0 ? false : true;
+    return readMemory<int64_t>(ped + 0x14C7) == 0 ? false : true;
 }
 
 void GTAModule::entity_set_position(int64_t entity, Vector3 pos)
