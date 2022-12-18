@@ -38,53 +38,47 @@ int main()
 		
 		bool isRunning = true;
 
-		/*
+		auto gta_instance = std::make_unique<GTAModule>();
+		auto pointers_instance = std::make_unique<Pointers>();
+
+		auto game_thread = [&]
 		{
-			auto gta_instance = std::make_unique<GTAModule>();
-			auto pointers_instance = std::make_unique<Pointers>();
+			// Log Game Content
+			std::cout << "WorldPTR:          " << std::hex << g_pointers->WorldPTR << "\n";
+			std::cout << "BlipPTR:           " << std::hex << g_pointers->BlipPTR << "\n";
+			std::cout << "ReplayInterfacePTR:" << std::hex << g_pointers->ReplayInterfacePTR << "\n";
+			std::cout << "LocalScriptsPTR:   " << std::hex << g_pointers->LocalScriptsPTR << "\n";
+			std::cout << "GlobalPTR:         " << std::hex << g_pointers->GlobalPTR << "\n";
 
-			auto game_thread = [&]
+			//std::cout << "PlayerCountPTR:    " << std::hex << g_pointers->PlayerCountPTR << "\n";
+			//std::cout << "PickupDataPTR:     " << std::hex << g_pointers->PickupDataPTR << "\n";
+			//std::cout << "WeatherADDR:       " << std::hex << g_pointers->WeatherADDR << "\n";
+			//std::cout << "SettingsPTRs:      " << std::hex << g_pointers->SettingsPTRs << "\n";
+			//std::cout << "AimCPedPTR:        " << std::hex << g_pointers->AimCPedPTR << "\n";
+			//std::cout << "FriendlistPTR:     " << std::hex << g_pointers->FriendlistPTR << "\n";
+			//std::cout << "ThermalADDR:       " << std::hex << g_pointers->ThermalADDR << "\n";
+			//std::cout << "NightvisionADDR:   " << std::hex << g_pointers->NightvisionADDR << "\n";
+			//std::cout << "BlackoutADDR:      " << std::hex << g_pointers->BlackoutADDR << "\n";
+
+			while (isRunning && gta5->is_running())
 			{
-				// Log Game Content
-				std::cout << "WorldPTR:          " << std::hex << g_pointers->WorldPTR << "\n";
-				std::cout << "BlipPTR:           " << std::hex << g_pointers->BlipPTR << "\n";
-				std::cout << "ReplayInterfacePTR:" << std::hex << g_pointers->ReplayInterfacePTR << "\n";
-				std::cout << "LocalScriptsPTR:   " << std::hex << g_pointers->LocalScriptsPTR << "\n";
-				std::cout << "GlobalPTR:         " << std::hex << g_pointers->GlobalPTR << "\n";
+				if (GetAsyncKeyState(VK_END) & 0x1) { break; }
 
-				//std::cout << "PlayerCountPTR:    " << std::hex << g_pointers->PlayerCountPTR << "\n";
-				//std::cout << "PickupDataPTR:     " << std::hex << g_pointers->PickupDataPTR << "\n";
-				//std::cout << "WeatherADDR:       " << std::hex << g_pointers->WeatherADDR << "\n";
-				//std::cout << "SettingsPTRs:      " << std::hex << g_pointers->SettingsPTRs << "\n";
-				//std::cout << "AimCPedPTR:        " << std::hex << g_pointers->AimCPedPTR << "\n";
-				//std::cout << "FriendlistPTR:     " << std::hex << g_pointers->FriendlistPTR << "\n";
-				//std::cout << "ThermalADDR:       " << std::hex << g_pointers->ThermalADDR << "\n";
-				//std::cout << "NightvisionADDR:   " << std::hex << g_pointers->NightvisionADDR << "\n";
-				//std::cout << "BlackoutADDR:      " << std::hex << g_pointers->BlackoutADDR << "\n";
-
-				while (isRunning && gta5->is_running())
-				{
-					// Keybinds Start
-					if (GetAsyncKeyState(VK_END) & 0x1) { break; }
-
-					if (GetAsyncKeyState(VK_F6) & 0x8000) {
-						gta5->to_waypoint(gta5->get_local_ped());
-					}
-
-					if (GetAsyncKeyState(VK_F7) & 0x8000) {
-						gta5->to_objective(gta5->get_local_ped());
-					}
-					// Keybinds End
-					std::this_thread::sleep_for(std::chrono::milliseconds(10));
+				if (GetAsyncKeyState(VK_F6) & 0x8000) {
+					gta5->to_waypoint(gta5->get_local_ped());
 				}
 
-				pointers_instance.reset();
-				gta_instance.reset();
-			};
+				if (GetAsyncKeyState(VK_F7) & 0x8000) {
+					gta5->to_objective(gta5->get_local_ped());
+				}
+				std::this_thread::sleep_for(std::chrono::milliseconds(10));
+			}
 
-			pool.enqueue(game_thread);
-		}
-		*/
+			pointers_instance.reset();
+			gta_instance.reset();
+		};
+
+		thread_pool->enqueue(game_thread);
 
 		auto gui_instance = std::make_unique<Rendering>();
 		auto rendering_thread = [&]
