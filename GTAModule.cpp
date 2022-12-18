@@ -87,7 +87,7 @@ void GTAModule::to_waypoint(int64_t ped)
 void GTAModule::to_objective(int64_t ped)
 {
     int64_t blip;
-    if (!get_blip(blip, { 8 }, { 40, 48 })) return;
+    if (!get_blip(blip, { 1, 5, 60, 66 }, { 40, 48, 48, 48 })) return;
     int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
     Vector3 pos = get_blip_pos(blip);
     pos.z += 1;
