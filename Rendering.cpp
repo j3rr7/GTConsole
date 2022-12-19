@@ -282,6 +282,14 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("Online"))
         {
+            if (ImGui::Button("Disable AFK interfal"))
+            {
+                g_thread_pool->enqueue([] {
+                    gta5->SG<int>(1653913 + 1156, -1);
+                    gta5->SG<int>(1653913 + 1172, -1);
+                    });
+            }
+
             if (ImGui::Button("Tp to personal vehicle"))
             {
                 g_thread_pool->enqueue([] {

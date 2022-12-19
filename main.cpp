@@ -33,6 +33,7 @@ int main()
 		std::cout << "[+] Reading Settings...\n";
 		auto thread_pool = std::make_unique<ThreadPool>(4);
 		auto config_instance = std::make_unique<Config>("settings.ini");
+		std::cout << "[+] Settings Loaded\n";
 		
 		bool isRunning = true;
 
@@ -87,7 +88,7 @@ int main()
 		{
 			gui_instance->on_init();
 
-			while (isRunning)
+			while (isRunning && gui_instance->is_running)
 			{
 				if (GetAsyncKeyState(VK_INSERT) & 0x1) {
 					SetWindowPos(gui_instance->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
@@ -99,13 +100,6 @@ int main()
 			}
 
 			gui_instance->on_destroy();
-
-			MessageBoxA(
-				NULL,
-				"You close the gui but the console is still running",
-				"Error",
-				MB_ICONSTOP | MB_ICONWARNING
-			);
 
 			gui_instance.reset();
 		};
