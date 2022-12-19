@@ -83,6 +83,11 @@ public:
         parser_.Save(file_name);
     }
 
+    bool IsConsoleHidden()
+    {
+        return stringToBool(GetValue("GENERAL", "NO_CONSOLE"));
+    }
+
 private:
     bool stringToBool(const std::string& str) {
         std::string lowercaseStr = str;

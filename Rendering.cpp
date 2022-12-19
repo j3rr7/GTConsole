@@ -352,6 +352,7 @@ void Rendering::dx_menu()
         ImGui::EndTabBar();
     }
 
+    ImGui::SetCursorPosY((ImGui::GetWindowSize().y - 27.f));
     ImGui::Separator();
     ImGui::Text("Frame %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
