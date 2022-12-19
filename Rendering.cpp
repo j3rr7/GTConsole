@@ -45,7 +45,7 @@ void Rendering::on_init()
     style.WindowRounding = 8.f;
     style.FrameRounding = 8.f;
 
-    int hue = 160;
+    int hue = 150;
     float col_main_sat = 180.f / 255.f;
     float col_main_val = 161.f / 255.f;
     float col_area_sat = 124.f / 255.f;
@@ -74,7 +74,7 @@ void Rendering::on_init()
     style.Colors[ImGuiCol_ScrollbarGrab] = ImVec4(col_main.x, col_main.y, col_main.z, 0.31f);
     style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.78f);
     style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
-    style.Colors[ImGuiCol_CheckMark] = ImVec4(col_main.x, col_main.y, col_main.z, 0.80f);
+    style.Colors[ImGuiCol_CheckMark] = ImVec4(col_main.x + 0.3f, col_main.y + 0.3f, col_main.z, 0.90f);
     style.Colors[ImGuiCol_SliderGrab] = ImVec4(col_main.x, col_main.y, col_main.z, 0.24f);
     style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
     style.Colors[ImGuiCol_Button] = ImVec4(col_main.x, col_main.y, col_main.z, 0.44f);
@@ -341,6 +341,18 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("DEBUG"))
         {
+            if (ImGui::Checkbox("Always On Top", &g_config->is_always_ontop))
+            {
+                if (g_config->is_always_ontop)
+                {
+                    SetWindowPos(hWnd, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                }
+                else
+                {
+                    SetWindowPos(hWnd, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+                }
+            }
+
             if (ImGui::Button("DEBUG BUTTON"))
             {
                 g_thread_pool->enqueue([] {

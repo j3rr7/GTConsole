@@ -13,8 +13,8 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
-#define WINDOW_WIDTH 960
-#define WINDOW_HEIGHT 680
+#define WINDOW_WIDTH 600
+#define WINDOW_HEIGHT 420
 
 namespace nsRendering {
 	static inline LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
