@@ -71,6 +71,8 @@ int main()
 				if (GetAsyncKeyState(VK_F7) & 0x8000) {
 					gta5->to_objective(gta5->get_local_ped());
 				}
+
+				gta5->on_tick();
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 
@@ -87,12 +89,23 @@ int main()
 
 			while (isRunning)
 			{
+				if (GetAsyncKeyState(VK_INSERT) & 0x1) {
+					SetWindowPos(gui_instance->hWnd, HWND_TOP, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
+				}
+
 				gui_instance->on_tick();
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(10));
 			}
 
 			gui_instance->on_destroy();
+
+			MessageBoxA(
+				NULL,
+				"You close the gui but the console is still running",
+				"Error",
+				MB_ICONSTOP | MB_ICONWARNING
+			);
 
 			gui_instance.reset();
 		};

@@ -95,6 +95,9 @@ private:
 
 public:
     bool is_console_hidden = false;
+    bool is_god_mode = false;
+    bool is_cop_blind = false;
+    bool is_cop_bribed = false;
 
 private:
     InIParser parser_;

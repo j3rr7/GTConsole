@@ -2,12 +2,16 @@
 #include "common.h"
 #include "Memory.h"
 #include "Pointers.h"
+#include "Settings.h"
 
 class GTAModule : public Memory
 {
 public:
 	GTAModule() ;
 	~GTAModule() ;
+
+public:
+	void on_tick();
 
 public:
 	int64_t GA(int index);

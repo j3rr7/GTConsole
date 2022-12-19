@@ -10,6 +10,18 @@ GTAModule::~GTAModule()
     gta5 = nullptr;
 }
 
+void GTAModule::on_tick()
+{
+    if (g_config->is_god_mode)
+    {
+        gta5->writeMemory<float>(get_local_ped() + 0x280, {}, 325);
+        gta5->writeMemory<float>(get_local_ped() + 0x284, {}, 325);
+        gta5->writeMemory<float>(get_local_ped() + 0x150C, {}, 50); // 50 online | 100 offline
+
+        std::this_thread::yield();
+    }
+}
+
 int64_t GTAModule::GA(int index)
 {
     int a = 8 * ((index >> 0x12) & 0x3F);
