@@ -232,21 +232,23 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("Vehicle Spawn"))
         {
+            static char model_hash[128];
+            ImGui::InputText("Vehicle Model", model_hash, IM_ARRAYSIZE(model_hash));
             if (ImGui::Button("Spawn Vehicle"))
             {
                 g_thread_pool->enqueue([] {
                     Vector3 ped_pos = gta5->get_current_location(gta5->get_local_ped());
-                    uintptr_t modelHash = gta5->joaat("adder");
+                    uint32_t modelHash = gta5->joaat(model_hash);
                     Vector2 heading = gta5->readMemory<Vector2>(gta5->get_local_ped() + 0x30, { 0x20 });
                     Vector3 new_pos{
                         ped_pos.x - (heading.y * 5.f),
-                        ped_pos.y + (heading.x),
+                        ped_pos.y + (heading.x * 5.f),
                         ped_pos.z + 0.5f
                     };
-                    gta5->SG<float>(2694560 + 7 + 0, ped_pos.x);
-                    gta5->SG<float>(2694560 + 7 + 1, ped_pos.y);
-                    gta5->SG<float>(2694560 + 7 + 2, ped_pos.z);
-                    gta5->SG<uintptr_t>(2694560 + 27 + 66, modelHash);
+                    gta5->SG<float>(2694560 + 7 + 0, new_pos.x);
+                    gta5->SG<float>(2694560 + 7 + 1, new_pos.y);
+                    gta5->SG<float>(2694560 + 7 + 2, new_pos.z);
+                    gta5->SG<uint32_t>(2694560 + 27 + 66, modelHash);
                     gta5->SG<int>(2694560 + 27 + 28, 1);
                     gta5->SG<int>(2694560 + 27 + 60, 1);
                     gta5->SG<int>(2694560 + 27 + 95, 14);
@@ -257,7 +259,7 @@ void Rendering::dx_menu()
                     gta5->SG<int>(2694560 + 27 + 74, 1);
                     gta5->SG<int>(2694560 + 27 + 75, 1);
                     gta5->SG<int>(2694560 + 27 + 76, 0);
-                    gta5->SG<uint64_t>(2694560 + 27 + 60, 4030726305);
+                    gta5->SG<uint32_t>(2694560 + 27 + 60, 4030726305);
                     gta5->SG<int>(2694560 + 27 + 5, -1);
                     gta5->SG<int>(2694560 + 27 + 6, -1);
                     gta5->SG<int>(2694560 + 27 + 7, -1);

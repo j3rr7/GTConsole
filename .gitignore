@@ -399,3 +399,11 @@ FodyWeavers.xsd
 settings.ini
 
 icon.png
+
+GTConsole.rc
+
+resource.h
+
+build
+
+CMake
