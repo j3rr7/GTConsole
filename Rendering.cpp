@@ -357,9 +357,7 @@ void Rendering::dx_menu()
 
             if (ImGui::Button("DEBUG BUTTON"))
             {
-                g_thread_pool->enqueue([] {
-                    std::cout << "GG : " << gta5->GG<int>(262145 + 34044) << "\n";
-                    });
+
             }
         }
 

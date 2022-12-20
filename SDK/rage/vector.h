@@ -8,7 +8,7 @@ namespace rage
         T data[2];
         struct { T x, y; };
     };
-
+    
     template<typename T>
     union vector3
     {
@@ -27,14 +27,14 @@ namespace rage
     union matrix34
     {
         T data[3][4];
-        struct { struct { T x, y, z, w; } rows[3]; };
+        struct { struct {T x, y, z, w; } rows[3];};
     };
 
     template<typename T>
     union matrix44
     {
         T data[4][4];
-        struct { struct { T x, y, z, w; } rows[4]; };
+        struct { struct {T x, y, z, w; } rows[4];};
     };
 
     typedef vector2<float> fvector2;

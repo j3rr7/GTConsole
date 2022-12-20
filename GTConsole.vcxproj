@@ -147,7 +147,6 @@
     <ClCompile Include="Pattern.cpp" />
     <ClCompile Include="Pointers.cpp" />
     <ClCompile Include="Rendering.cpp" />
-    <ClCompile Include="SDK.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h" />
@@ -165,8 +164,6 @@
     <ClInclude Include="Pattern.h" />
     <ClInclude Include="Pointers.h" />
     <ClInclude Include="Rendering.h" />
-    <ClInclude Include="SDK.h" />
-    <ClInclude Include="SDK\vector.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="ThreadPool.h" />
   </ItemGroup>

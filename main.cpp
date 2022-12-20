@@ -45,11 +45,11 @@ int main()
 		{
 			// Log Game Content
 			std::cout << "======= DEBUG =======\n";
-			std::cout << "[-] WorldPTR:          " << std::hex << g_pointers->WorldPTR << "\n";
-			std::cout << "[-] BlipPTR:           " << std::hex << g_pointers->BlipPTR << "\n";
-			std::cout << "[-] ReplayInterfacePTR:" << std::hex << g_pointers->ReplayInterfacePTR << "\n";
-			std::cout << "[-] LocalScriptsPTR:   " << std::hex << g_pointers->LocalScriptsPTR << "\n";
-			std::cout << "[-] GlobalPTR:         " << std::hex << g_pointers->GlobalPTR << "\n";
+			std::cout << "[-] WorldPTR:          " << std::hex << HEX_TO_UPPER(g_pointers->WorldPTR) << "\n";
+			std::cout << "[-] BlipPTR:           " << std::hex << HEX_TO_UPPER(g_pointers->BlipPTR) << "\n";
+			std::cout << "[-] ReplayInterfacePTR:" << std::hex << HEX_TO_UPPER(g_pointers->ReplayInterfacePTR) << "\n";
+			std::cout << "[-] LocalScriptsPTR:   " << std::hex << HEX_TO_UPPER(g_pointers->LocalScriptsPTR) << "\n";
+			std::cout << "[-] GlobalPTR:         " << std::hex << HEX_TO_UPPER(g_pointers->GlobalPTR) << "\n";
 			std::cout << "======= END DEBUG =======\n";
 
 			//std::cout << "PlayerCountPTR:    " << std::hex << g_pointers->PlayerCountPTR << "\n";
