@@ -16,6 +16,7 @@
 #include <string>
 #include <unordered_map>
 #include <sstream>
+#include <filesystem>
 
 struct Vector3 { float x; float y; float z; };
 struct Vector2 { float x; float y; };

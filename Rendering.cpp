@@ -26,6 +26,8 @@ void Rendering::on_init()
     }
 
     ::ShowWindow(hWnd, SW_SHOWDEFAULT);
+    //SetWindowLong(hWnd, GWL_EXSTYLE, GetWindowLong(hWnd, GWL_EXSTYLE) | WS_EX_LAYERED); scrap this
+    //SetLayeredWindowAttributes(hWnd, 0, 250, LWA_ALPHA);
     ::UpdateWindow(hWnd);
 
     IMGUI_CHECKVERSION();
@@ -322,6 +324,8 @@ void Rendering::dx_menu()
                     });
             }
 
+            ImGui::SameLine();
+
             if (ImGui::Checkbox("Bribe Cop", &g_config->is_cop_bribed))
             {
                 g_config->is_cop_bribed ? g_thread_pool->enqueue([] {
@@ -337,8 +341,88 @@ void Rendering::dx_menu()
                     gta5->SG<int>(2793044 + 4654, 0);
                         });                
             }
-            
+
+            if (ImGui::CollapsingHeader("Special Cargo"))
+            {
+                if (ImGui::Button("No Sell Cooldown"))
+                {
+                    gta5->SG<int>(262145 + 15554, 0);
+                }
+
+                if (ImGui::Button("Instant finish special crago sell mission"))
+                {
+                    gta5->SL("GB_CONTRABAND_SELL", 540 + 1, 99999);
+                }
+
+                if (ImGui::Button("Instant finish buy/steal mission"))
+                {
+                    gta5->SL("GB_CONTRABAND_BUY", 598 + 5, 1);
+                    gta5->SL("GB_CONTRABAND_BUY", 598 + 191, 6);
+                    gta5->SL("GB_CONTRABAND_BUY", 598 + 192, 4);
+                }
+
+                if (ImGui::Button("Set Sell Price (3.2M)"))
+                {
+                    auto sale_price = 327132; //5000000
+                    auto base_address = 15788;
+                    gta5->SG<int>(262145 + base_address, sale_price);
+                    gta5->SG<int>(262145 + base_address + 1, sale_price);
+                    gta5->SG<int>(262145 + base_address + 2, sale_price);
+                    gta5->SG<int>(262145 + base_address + 3, sale_price);
+                    gta5->SG<int>(262145 + base_address + 4, sale_price);
+                    gta5->SG<int>(262145 + base_address + 5, sale_price);
+                    gta5->SG<int>(262145 + base_address + 6, sale_price);
+                    gta5->SG<int>(262145 + base_address + 7, sale_price);
+                    gta5->SG<int>(262145 + base_address + 8, sale_price);
+                    gta5->SG<int>(262145 + base_address + 9, sale_price);
+                    gta5->SG<int>(262145 + base_address + 10, sale_price);
+                    gta5->SG<int>(262145 + base_address + 11, sale_price);
+                    gta5->SG<int>(262145 + base_address + 12, sale_price);
+                    gta5->SG<int>(262145 + base_address + 13, sale_price);
+                    gta5->SG<int>(262145 + base_address + 14, sale_price);
+                    gta5->SG<int>(262145 + base_address + 15, sale_price);
+                    gta5->SG<int>(262145 + base_address + 16, sale_price);
+                    gta5->SG<int>(262145 + base_address + 17, sale_price);
+                    gta5->SG<int>(262145 + base_address + 18, sale_price);
+                    gta5->SG<int>(262145 + base_address + 19, sale_price);
+                    gta5->SG<int>(262145 + base_address + 20, sale_price);
+                }
+            }
+
+            if (ImGui::CollapsingHeader("Nightclub"))
+            {
+                if (ImGui::Button("NightClub Sell Change Price"))
+                {
+                    auto sale_price = 138000;
+                    auto base_address = 24381;// --offset for v 1.64 nightclub goods
+                    gta5->SG<int>(262145 + base_address, sale_price);
+                    gta5->SG<int>(262145 + base_address + 1, sale_price);
+                    gta5->SG<int>(262145 + base_address + 2, sale_price);
+                    gta5->SG<int>(262145 + base_address + 3, sale_price);
+                    gta5->SG<int>(262145 + base_address + 4, sale_price);
+                    gta5->SG<int>(262145 + base_address + 5, sale_price);
+                    gta5->SG<int>(262145 + base_address + 6, sale_price);
+                }
+            }
+
+
             ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Stats"))
+        {
+            /*
+            static std::string stat_name;
+            gta5->GG<int>(1574918); grab mp0 or mp1 player
+            auto stat_hash = rage::joaat(stat_name);
+            auto oldhash = gta5->GG<int>(1665454+4)
+            auto oldvalue = gta5->GG<int>(1010831+5525)
+            gta5->SG<int>(1665454+4,hash)
+            gta5->SG<int>(1010831+5525,value)
+            gta5->SG<int>(1653913+1139,-1)
+            gta5->SG<int>(1665454+4,oldhash)
+            gta5->SG<int>(1010831+5525,oldvalue)
+            */
         }
 
         if (ImGui::BeginTabItem("DEBUG"))

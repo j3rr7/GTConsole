@@ -43,11 +43,12 @@ public:
 	}
 
 	bool get_blip(int64_t& blip, std::vector<int> icons, std::vector<int> colors = {});
-
 	Vector3 get_blip_pos(int64_t blip);
+
 	Vector3 get_current_location(int64_t ped);
 	int64_t get_local_ped();
 	int64_t ped_get_current_vehicle(int64_t ped);
+
 	bool ped_is_in_vehicle(int64_t ped);
 	void entity_set_position(int64_t entity, Vector3 pos);
 

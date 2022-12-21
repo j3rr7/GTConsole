@@ -1,72 +1,80 @@
 #pragma once
 
 #include <iostream>
-#include <functional>
 #include <thread>
 #include <vector>
 #include <queue>
+#include <functional>
+#include <exception>
 #include <mutex>
 #include <condition_variable>
 
 class ThreadPool;
-inline ThreadPool* g_thread_pool;
+inline ThreadPool* g_thread_pool = nullptr;
 
 class ThreadPool {
 public:
     using Task = std::function<void()>;
 
-    explicit ThreadPool(std::size_t numThreads)
-        : stop_(false)
-    {
-        for (std::size_t i = 0; i < numThreads; ++i) {
+    explicit ThreadPool(std::size_t num_threads) {
+        for (std::size_t i = 0; i < num_threads; ++i) {
             workers_.emplace_back([this] {
-                while (true) {
+                for (;;) {
                     Task task;
                     {
-                        std::unique_lock<std::mutex> lock(this->queueMutex_);
-                        this->condition_.wait(lock,
-                            [this] { return this->stop_ || !this->tasks_.empty(); });
-                        if (this->stop_ && this->tasks_.empty()) {
+                        std::unique_lock<std::mutex> lock(mutex_);
+                        cv_.wait(lock, [this] { return stop_ || !tasks_.empty(); });
+                        if (stop_ && tasks_.empty()) {
                             return;
                         }
-                        task = std::move(this->tasks_.front());
-                        this->tasks_.pop();
+                        task = std::move(tasks_.front());
+                        tasks_.pop();
                     }
-                    task();
+                    try {
+                        task();
+                    }
+                    catch (const std::exception& ex) {
+                        // Handle exception
+                        std::cout << ex.what() << "\n";
+                    }
                 }
                 });
         }
         g_thread_pool = this;
     }
 
-    ~ThreadPool()
-    {
+    ~ThreadPool() {
         {
-            std::unique_lock<std::mutex> lock(queueMutex_);
+            std::unique_lock<std::mutex> lock(mutex_);
             stop_ = true;
         }
-        condition_.notify_all();
+        cv_.notify_all();
         for (auto& worker : workers_) {
             worker.join();
         }
         g_thread_pool = nullptr;
     }
 
-    template <typename T>
-    void enqueue(T task)
-    {
+    template <typename F, typename... Args>
+    auto enqueue(F&& f, Args&&... args) -> std::future<typename std::invoke_result<F, Args...>::type> {
+        using return_type = typename std::invoke_result<F, Args...>::type;
+
+        auto task = std::make_shared<std::packaged_task<return_type()>>(
+            std::bind(std::forward<F>(f), std::forward<Args>(args)...));
+
+        std::future<return_type> res = task->get_future();
         {
-            std::unique_lock<std::mutex> lock(queueMutex_);
-            tasks_.emplace(task);
+            std::unique_lock<std::mutex> lock(mutex_);
+            tasks_.emplace([task]() { std::invoke(*task); });
         }
-        condition_.notify_one();
+        cv_.notify_one();
+        return res;
     }
 
 private:
     std::vector<std::thread> workers_;
     std::queue<Task> tasks_;
-
-    std::mutex queueMutex_;
-    std::condition_variable condition_;
-    bool stop_;
+    std::mutex mutex_;
+    std::condition_variable cv_;
+    bool stop_ = false;
 };

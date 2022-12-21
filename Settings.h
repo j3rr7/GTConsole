@@ -83,9 +83,9 @@ public:
         parser_.Save(file_name);
     }
 
-    bool IsConsoleHidden()
+    bool getBoolean(const std::string& section, const std::string& key)
     {
-        return stringToBool(GetValue("GENERAL", "NO_CONSOLE"));
+        return stringToBool(GetValue(section, key));
     }
 
 private:
@@ -106,6 +106,10 @@ public:
     bool is_cop_blind = false;
     bool is_cop_bribed = false;
 
+    bool is_keybind_active = true;
+
+    int vk_hotkey_waypoint;
+    int vk_hotkey_objective;
 private:
     InIParser parser_;
 };
