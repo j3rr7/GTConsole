@@ -79,8 +79,10 @@ public:
     bool is_always_ontop = false;
 
     bool is_god_mode = false;
+    bool is_never_wanted = false;
     bool is_cop_blind = false;
     bool is_cop_bribed = false;
+    bool is_disable_collision = false;
 
     bool is_keybind_active = true;
 

@@ -219,10 +219,74 @@ void Rendering::dx_menu()
         {
             ImGui::Checkbox("Semi God Mode", &g_config->is_god_mode);
 
+            if (ImGui::Checkbox("Disable Collision", &g_config->is_disable_collision))
+            {
+                if (!g_config->is_disable_collision)
+                {
+                    auto p1 = gta5->readMemory<int64_t>(gta5->get_local_ped() + 0x30, { 0x10,0x20,0x70,0x0 });
+                    gta5->writeMemory<float>(p1 + 0x2C, {}, 0.25f);
+                }
+            }
+
+            ImGui::Dummy(ImVec2(0, 10));
+
+            ImGui::Checkbox("No Wanted", &g_config->is_never_wanted);
+
+            static int wanted_level = gta5->readMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 });
+            if (ImGui::SliderInt("Wanted Level", &wanted_level, 0, 5))
+            {
+                gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, wanted_level);
+            }
+
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Teleport"))
+        if (ImGui::BeginTabItem("Session"))
+        {
+            if (ImGui::Button("Create Public Session"))
+            {
+
+            }
+            if (ImGui::Button("Join Public Session"))
+            {
+
+            }
+            if (ImGui::Button("Invite Only Session"))
+            {
+
+            }
+            if (ImGui::Button("Find Friend Session"))
+            {
+
+            }
+            if (ImGui::Button("Closed Friend Session"))
+            {
+
+            }
+            if (ImGui::Button("Create Crew Session"))
+            {
+
+            }
+            if (ImGui::Button("Create Closed Crew Session"))
+            {
+
+            }
+            if (ImGui::Button("Join Crew Session"))
+            {
+
+            }
+            if (ImGui::Button("Solo Session"))
+            {
+
+            }
+            if (ImGui::Button("Network Bail/Leave Online"))
+            {
+
+            }
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Teleport Presist"))
         {
             ImGui::BeginChild("##teleport_location", ImVec2(225.f, -30.f), true, NULL);
 
@@ -301,6 +365,21 @@ void Rendering::dx_menu()
                         ped_pos.z + 0.5f
                     };
                     gta5->create_basic_vehicle(modelHash, new_pos, false);
+                    });
+            }
+
+            if (ImGui::Button("Simple Vehicle Spawn"))
+            {
+                g_thread_pool->enqueue([] {
+                    Vector3 ped_pos = gta5->get_entity_location(gta5->get_local_ped());
+                    uint32_t modelHash = gta5->joaat(model_hash);
+                    Vector2 heading = gta5->readMemory<Vector2>(gta5->get_local_ped() + 0x30, { 0x20 });
+                    Vector3 new_pos{
+                        ped_pos.x - (heading.y * 5.f),
+                        ped_pos.y + (heading.x * 5.f),
+                        ped_pos.z + 0.5f
+                    };
+                    gta5->simple_vehicle_spawner(modelHash, new_pos, false);
                     });
             }
 
@@ -433,6 +512,8 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("Stats"))
         {
+            static char stats_name[256];
+            ImGui::InputText("Name", stats_name, IM_ARRAYSIZE(stats_name));
             /*
             static std::string stat_name;
             gta5->GG<int>(1574918); grab mp0 or mp1 player
@@ -474,11 +555,13 @@ void Rendering::dx_menu()
                 }
             }
 
-            ImGui::Checkbox("Enable Keybinds", &g_config->is_keybind_active);
+            ImGui::Checkbox("Keybinds Enabled", &g_config->is_keybind_active);
+
+            ImGui::Checkbox("Globals Enabled", &g_config->is_globals_enabled);
 
             if (ImGui::Button("DEBUG BUTTON"))
             {
-
+                
             }
             ImGui::EndTabItem();
         }

@@ -20,6 +20,15 @@ void GTAModule::on_tick()
 
         std::this_thread::yield();
     }
+    if (g_config->is_never_wanted)
+    {
+        gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, 0);
+    }
+    if (g_config->is_disable_collision)
+    {
+        auto p1 = gta5->readMemory<int64_t>(gta5->get_local_ped() + 0x30, { 0x10,0x20,0x70,0x0 });
+        gta5->writeMemory<float>(p1 + 0x2C, {}, -1.f);
+    }
 }
 
 int64_t GTAModule::GA(int index)
@@ -176,4 +185,18 @@ void GTAModule::create_basic_vehicle(uint32_t modelHash, Vector3 location, bool 
     writeMemory<int8_t>(GA(2694560 + 27 + 77) + 1, {}, 2); // 2:bulletproof 0 : false
     SG<int>(2694560 + 27 + 95, 14); // ownerflag
     SG<int>(2694560 + 27 + 94, 2); // personal car ownerflag
+}
+
+void GTAModule::simple_vehicle_spawner(uint32_t modelHash, Vector3 location, bool is_pegasus)
+{
+    if (!g_config->is_globals_enabled)
+        return
+
+    SG<float>(2639783 + 7 + 0, location.x);
+    SG<float>(2639783 + 7 + 1, location.y);
+    SG<float>(2639783 + 7 + 2, location.z);
+    SG<uint32_t>(2639783 + 27 + 66, modelHash);
+    SG<int>(2639783 + 3, is_pegasus);
+    SG(2639783 + 5, 1); // car spawn flag odd
+    SG(2639783 + 2, 1); // car spawn toggle
 }

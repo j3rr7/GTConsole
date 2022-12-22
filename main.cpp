@@ -5,6 +5,8 @@
 #include "Settings.h"
 #include "Teleports.h"
 
+#define RELEASE
+
 bool checkRunning() {
 	auto m_hMutex = CreateMutex(NULL, FALSE, L"GTConsole.exe");
 	switch (GetLastError())
@@ -40,6 +42,7 @@ int main()
 		bool isRunning = true;
 		auto gui_instance = std::make_unique<Rendering>();
 
+//#ifdef RELEASE
 		auto gta_instance = std::make_unique<GTAModule>();
 		auto pointers_instance = std::make_unique<Pointers>();
 
@@ -66,7 +69,7 @@ int main()
 			{
 				if (g_config->is_keybind_active)
 				{
-					if (GetAsyncKeyState(VK_END) & 0x1) { break; }
+					// if (GetAsyncKeyState(VK_END) & 0x1) { break; }
 
 					if (GetAsyncKeyState(g_config->vk_hotkey_waypoint) & 0x8000) {
 						gta5->to_waypoint();
@@ -84,6 +87,8 @@ int main()
 			isRunning = false;
 		};
 
+		thread_pool->enqueue(game_thread);
+//#endif
 		auto rendering_thread = [&]
 		{
 			gui_instance->on_init();
@@ -100,7 +105,6 @@ int main()
 			isRunning = false;
 		};
 
-		thread_pool->enqueue(game_thread);
 		thread_pool->enqueue(rendering_thread);
 
 		while (isRunning) { std::this_thread::sleep_for(std::chrono::milliseconds(100)); }	
