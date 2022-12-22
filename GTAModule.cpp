@@ -85,8 +85,9 @@ void GTAModule::entity_set_position(int64_t entity, Vector3 pos)
     writeMemory<Vector3>(entity + 0x90, {}, pos);
 }
 
-void GTAModule::to_waypoint(int64_t ped)
+void GTAModule::to_waypoint()
 {
+    int64_t ped = get_local_ped();
     int64_t blip;
     if (!get_blip(blip, { 8 }, { 84 })) return;
     int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
@@ -96,8 +97,9 @@ void GTAModule::to_waypoint(int64_t ped)
     entity_set_position(entity, pos);
 }
 
-void GTAModule::to_objective(int64_t ped)
+void GTAModule::to_objective()
 {
+    int64_t ped = get_local_ped();
     int64_t blip;
     if (!get_blip(blip, { 1 }, { 5, 60, 66 })) return;
     int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
@@ -107,9 +109,8 @@ void GTAModule::to_objective(int64_t ped)
     entity_set_position(entity, pos);
 }
 
-Vector3 GTAModule::get_current_location(int64_t ped)
+Vector3 GTAModule::get_entity_location(int64_t entity)
 {
-    int64_t entity = ped_is_in_vehicle(ped) ? ped_get_current_vehicle(ped) : ped;
     return readMemory<Vector3>(entity + 0x30, { 0x50 });
 }
 
@@ -128,4 +129,51 @@ uint32_t GTAModule::joaat(std::string str)
     hash = hash ^ ((hash & Uint32) >> 11);
     hash = hash + (hash << 15);
     return hash & Uint32;
+}
+
+void GTAModule::create_basic_vehicle(uint32_t modelHash, Vector3 location, bool is_pegasus = false)
+{
+    if (!g_config->is_globals_enabled)
+        return
+
+    SG<float>(2694560 + 7 + 0, location.x);
+    SG<float>(2694560 + 7 + 1, location.y);
+    SG<float>(2694560 + 7 + 2, location.z);
+    SG<uint32_t>(2694560 + 27 + 66, modelHash);
+    SG<int>(2694560 + 3, is_pegasus);
+    SG(2694560 + 5, 1); // car spawn flag odd
+    SG(2694560 + 2, 1); // car spawn toggle
+    // SG(2694560 + 27 + 1, 0); // license plate bit
+    // SG<std::string>(2694560 + 27 + 1, "F U");
+    SG<int>(2694560 + 27 + 5, 159); // primary
+    SG<int>(2694560 + 27 + 6, 159); // secondary
+    // SG<int>(2694560 + 27 + 7, -1); // pearlescent
+    // SG<int>(2694560 + 27 + 8, 123); // wheel color
+    // SG<int>(2694560 + 27 + 15, );  // primary weapon
+    SG<int>(2694560 + 27 + 19, -1);
+    // SG<int>(2694560 + 27 + 20, ); // secondary weapon
+    SG<int>(2694560 + 27 + 21, 2); // engine(0 - 3)
+    SG<int>(2694560 + 27 + 22, 6); // brakes(0 - 6)
+    SG<int>(2694560 + 27 + 23, 9); // transmission(0 - 9)
+    SG<int>(2694560 + 27 + 24, 3); // horn(0 - 77)
+    SG<int>(2694560 + 27 + 25, 2); // suspension(0 - 13)
+    SG<int>(2694560 + 27 + 26, 20); // armor(0 - 18)
+    SG<int>(2694560 + 27 + 27, 1); // turbo(0 - 1)
+    SG<int>(2694560 + 27 + 28, 1); // weaponised ownerflag
+    //SG<int>(2694560 + 27 + 32, ) // colored light(0 - 14)
+    //SG<int>(2694560 + 27 + 33, ) // wheel selection
+    SG<int>(2694560 + 27 + 60, 1);
+    SG<int>(2694560 + 27 + 62, 0); // Tire smoke color R
+    SG<int>(2694560 + 27 + 63, 0); // G
+    SG<int>(2694560 + 27 + 64, 0); // B
+    SG<int>(2694560 + 27 + 65, 0); // Window tint 0 - 6
+    // SG<int>(2694560 + 27 + 67, 0); // Livery
+    // SG<int>(2694560 + 27 + 69, ); // Wheel type
+    SG<int>(2694560 + 27 + 74, 0); // Neon R 0 - 255
+    SG<int>(2694560 + 27 + 75, 0); // G
+    SG<int>(2694560 + 27 + 76, 0); // B
+    SG<int64_t>(2694560 + 27 + 77, 4030726305); // vehstate
+    writeMemory<int8_t>(GA(2694560 + 27 + 77) + 1, {}, 2); // 2:bulletproof 0 : false
+    SG<int>(2694560 + 27 + 95, 14); // ownerflag
+    SG<int>(2694560 + 27 + 94, 2); // personal car ownerflag
 }

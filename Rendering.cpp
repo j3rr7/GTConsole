@@ -224,10 +224,63 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("Teleport"))
         {
+            ImGui::BeginChild("##teleport_location", ImVec2(225.f, -30.f), true, NULL);
+
+            static auto list_teleport = g_teleports->GetTeleportList();
+            for (auto it = list_teleport.begin(); it != list_teleport.end(); it++) {
+                int index = std::abs(std::distance(list_teleport.begin(), it));
+                const bool is_selected = (g_teleports->sel_index_tp == index);
+                std::string name = it->at("name");
+                name.append("##" + std::to_string(index));
+                if (ImGui::Selectable(name.c_str(), is_selected))
+                {
+                    g_teleports->sel_index_tp = index;
+                    gta5->entity_set_position(gta5->get_local_ped(), { it->at("x"), it->at("y"), it->at("z") });
+                }
+                if (is_selected)
+                {
+                    ImGui::SetItemDefaultFocus();
+                }
+            }
+            list_teleport = g_teleports->GetTeleportList();
+
+            ImGui::EndChild();
+
+            ImGui::SameLine();
+
+            ImGui::BeginGroup();
+            ImGui::Dummy(ImVec2(0, 5));
             if (ImGui::Button("Teleport to Waypoint"))
-                g_thread_pool->enqueue([] { gta5->to_waypoint(gta5->get_local_ped()); });
+                g_thread_pool->enqueue([] { gta5->to_waypoint(); });
+
+            ImGui::SameLine();
+
             if (ImGui::Button("Teleport to Objective"))
-                g_thread_pool->enqueue([] { gta5->to_objective(gta5->get_local_ped()); });
+                g_thread_pool->enqueue([] { gta5->to_objective(); });
+
+            ImGui::Dummy(ImVec2(0, 25));
+            ImGui::Text("Teleport Name");
+            static char teleport_name[128];
+            ImGui::InputText("##TeleportName", teleport_name, IM_ARRAYSIZE(teleport_name));
+
+            if (ImGui::Button("Append Current Location"))
+            {
+                if (strlen(teleport_name) == 0)
+                    g_teleports->appendLocation("Unnamed Location", gta5->get_entity_location(gta5->get_local_ped()));
+                else
+                    g_teleports->appendLocation(teleport_name, gta5->get_entity_location(gta5->get_local_ped()));
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Delete"))
+            {
+                if (g_teleports->sel_index_tp != -1)
+                    g_teleports->deleteLocation(g_teleports->sel_index_tp);
+                else
+                    g_teleports->deleteLocation(-1);
+                g_teleports->sel_index_tp = -1;
+            }
+
+            ImGui::EndGroup();
 
             ImGui::EndTabItem();
         }
@@ -239,7 +292,7 @@ void Rendering::dx_menu()
             if (ImGui::Button("Spawn Vehicle"))
             {
                 g_thread_pool->enqueue([] {
-                    Vector3 ped_pos = gta5->get_current_location(gta5->get_local_ped());
+                    Vector3 ped_pos = gta5->get_entity_location(gta5->get_local_ped());
                     uint32_t modelHash = gta5->joaat(model_hash);
                     Vector2 heading = gta5->readMemory<Vector2>(gta5->get_local_ped() + 0x30, { 0x20 });
                     Vector3 new_pos{
@@ -247,37 +300,7 @@ void Rendering::dx_menu()
                         ped_pos.y + (heading.x * 5.f),
                         ped_pos.z + 0.5f
                     };
-                    gta5->SG<float>(2694560 + 7 + 0, new_pos.x);
-                    gta5->SG<float>(2694560 + 7 + 1, new_pos.y);
-                    gta5->SG<float>(2694560 + 7 + 2, new_pos.z);
-                    gta5->SG<uint32_t>(2694560 + 27 + 66, modelHash);
-                    gta5->SG<int>(2694560 + 27 + 28, 1);
-                    gta5->SG<int>(2694560 + 27 + 60, 1);
-                    gta5->SG<int>(2694560 + 27 + 95, 14);
-                    gta5->SG<int>(2694560 + 27 + 94, 2);
-                    gta5->SG<int>(2694560 + 5, 1);
-                    gta5->SG<int>(2694560 + 2, 1);
-                    gta5->SG<int>(2694560 + 3, 0);
-                    gta5->SG<int>(2694560 + 27 + 74, 1);
-                    gta5->SG<int>(2694560 + 27 + 75, 1);
-                    gta5->SG<int>(2694560 + 27 + 76, 0);
-                    gta5->SG<uint32_t>(2694560 + 27 + 60, 4030726305);
-                    gta5->SG<int>(2694560 + 27 + 5, -1);
-                    gta5->SG<int>(2694560 + 27 + 6, -1);
-                    gta5->SG<int>(2694560 + 27 + 7, -1);
-                    gta5->SG<int>(2694560 + 27 + 8, -1);
-                    gta5->SG<int>(2694560 + 27 + 19, 4);
-                    gta5->SG<int>(2694560 + 27 + 21, 4);
-                    gta5->SG<int>(2694560 + 27 + 22, 3);
-                    gta5->SG<int>(2694560 + 27 + 23, 3);
-                    gta5->SG<int>(2694560 + 27 + 24, 58);
-                    gta5->SG<int>(2694560 + 27 + 26, 5);
-                    gta5->SG<int>(2694560 + 27 + 27, 1);
-                    gta5->SG<int>(2694560 + 27 + 65, 2);
-                    gta5->SG<int>(2694560 + 27 + 69, -1);
-                    gta5->SG<int>(2694560 + 27 + 33, -1);
-                    gta5->SG<int>(2694560 + 27 + 25, 8);
-                    gta5->SG<int>(2694560 + 27 + 19, -1);
+                    gta5->create_basic_vehicle(modelHash, new_pos, false);
                     });
             }
 
@@ -405,7 +428,6 @@ void Rendering::dx_menu()
                 }
             }
 
-
             ImGui::EndTabItem();
         }
 
@@ -423,9 +445,22 @@ void Rendering::dx_menu()
             gta5->SG<int>(1665454+4,oldhash)
             gta5->SG<int>(1010831+5525,oldvalue)
             */
+            ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("DEBUG"))
+        if (ImGui::BeginTabItem("Unlocks"))
+        {
+            if (ImGui::Button("Unlock all Drug Wars content"))
+            {
+                for (int i = 33974; i < 34112; i++)
+                {
+                    gta5->SG<int>(262145 + i, 1);
+                }
+            }
+            ImGui::EndTabItem();
+        }
+
+        if (ImGui::BeginTabItem("Options"))
         {
             if (ImGui::Checkbox("Always On Top", &g_config->is_always_ontop))
             {
@@ -439,10 +474,13 @@ void Rendering::dx_menu()
                 }
             }
 
+            ImGui::Checkbox("Enable Keybinds", &g_config->is_keybind_active);
+
             if (ImGui::Button("DEBUG BUTTON"))
             {
 
             }
+            ImGui::EndTabItem();
         }
 
         ImGui::EndTabBar();

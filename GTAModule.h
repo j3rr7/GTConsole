@@ -45,17 +45,31 @@ public:
 	bool get_blip(int64_t& blip, std::vector<int> icons, std::vector<int> colors = {});
 	Vector3 get_blip_pos(int64_t blip);
 
-	Vector3 get_current_location(int64_t ped);
+	Vector3 get_entity_location(int64_t entity);
 	int64_t get_local_ped();
 	int64_t ped_get_current_vehicle(int64_t ped);
 
 	bool ped_is_in_vehicle(int64_t ped);
 	void entity_set_position(int64_t entity, Vector3 pos);
 
-	void to_waypoint(int64_t ped);
-	void to_objective(int64_t ped);
+	void to_waypoint();
+	void to_objective();
 
 	uint32_t joaat(std::string str);
+
+	void create_basic_vehicle(uint32_t modelHash, Vector3 location, bool is_pegasus);
+
+	bool Is_Bit_Set(int _value, int _bit) {
+		if ((_value >> _bit) & 1LL) 
+			return true;
+		return false;
+	}
+	int Set_Bit(int _value, int _bit) {
+		return _value |= 1LL << _bit;
+	}
+	int Clear_Bit(int _value, int _bit) {
+		return _value &= ~(1LL << _bit);
+	}
 };
 
 inline GTAModule* gta5 = nullptr;

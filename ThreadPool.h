@@ -36,6 +36,7 @@ public:
                     catch (const std::exception& ex) {
                         // Handle exception
                         std::cout << ex.what() << "\n";
+                        throw std::exception(ex);
                     }
                 }
                 });

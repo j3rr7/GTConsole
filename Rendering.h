@@ -3,6 +3,7 @@
 #include "ThreadPool.h"
 #include "GTAModule.h"
 #include "Settings.h"
+#include "Teleports.h"
 
 #include <imfont.h>
 #include <d3d11.h>

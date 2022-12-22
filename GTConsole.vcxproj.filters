@@ -52,6 +52,9 @@
     <ClCompile Include="imgui\backends\imgui_impl_win32.cpp">
       <Filter>imgui</Filter>
     </ClCompile>
+    <ClCompile Include="Teleports.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="common.h">
@@ -103,6 +106,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="imgui\imfont.h">
+      <Filter>imgui</Filter>
+    </ClInclude>
+    <ClInclude Include="VirtualKeyEnum.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Teleports.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="nlohmann\json.hpp">
       <Filter>imgui</Filter>
     </ClInclude>
   </ItemGroup>

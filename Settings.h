@@ -1,64 +1,39 @@
 #pragma once
 #include "common.h"
+#include "VirtualKeyEnum.h"
 
-class InIParser final {
+class JSONReader {
 public:
-    InIParser() = default;
-    InIParser(const std::string& file_name) { Load(file_name); }
+    JSONReader(const std::string& file_path) : file_path_(file_path) {}
 
-public:
-    void Load(const std::string& file_name) {
-        config_.clear();
-        std::ifstream ini_file(file_name);
-        std::string line;
-        while (std::getline(ini_file, line)) {
-            std::size_t section_start = line.find('[');
-            if (section_start != std::string::npos) {
-                std::size_t section_end = line.find(']');
-                if (section_end != std::string::npos) {
-                    std::string section = line.substr(section_start + 1, section_end - section_start - 1);
-                    while (std::getline(ini_file, line)) {
-                        if (line[0] == '[') {
-                            break;
-                        }
-                        std::size_t separator_pos = line.find('=');
-                        if (separator_pos != std::string::npos) {
-                            std::string key = line.substr(0, separator_pos);
-                            std::string value = line.substr(separator_pos + 1);
-                            config_[section + '.' + key] = value;
-                        }
-                    }
-                }
-            }
+    nlohmann::json Read() {
+        nlohmann::json data;
+
+        std::cout << "[+] Reading " << file_path_ << "\n";
+
+        std::ifstream file(file_path_);
+        if (!file.is_open()) {
+            std::cerr << "[!] Error reading file " << file_path_ << std::endl;
+            return data;
         }
-        ini_file.close();
+
+        data = nlohmann::json::parse(file);
+        file.close();
+        return data;
     }
 
-    void Save(const std::string& file_name) {
-        std::ofstream ini_file(file_name);
-        for (const auto& [key, value] : config_) {
-            std::size_t separator_pos = key.find('.');
-            std::string section = key.substr(0, separator_pos);
-            std::string k = key.substr(separator_pos + 1);
-            ini_file << '[' << section << "]\n" << k << '=' << value << '\n';
+    void Write(const nlohmann::json& data) {
+        std::ofstream file(file_path_);
+        if (!file.is_open()) {
+            std::cerr << "[!] Error writing file " << file_path_ << std::endl;
+            return;
         }
-        ini_file.close();
+        file << std::setw(2) << data << std::endl;
+        file.close();
     }
 
-    std::string GetValue(const std::string& section, const std::string& key) const {
-        std::string full_key = section + '.' + key;
-        auto it = config_.find(full_key);
-        if (it == config_.end()) {
-            return std::string();
-        }
-        return it->second;
-    }
-
-    void SetValue(const std::string& section, const std::string& key, const std::string& value) {
-        config_[section + '.' + key] = value;
-    }
 private:
-    std::unordered_map<std::string, std::string> config_;
+    std::string file_path_;
 };
 
 class Config;
@@ -71,35 +46,36 @@ public:
     }
     ~Config() { g_config = nullptr; }
 
-    std::string GetValue(const std::string& section, const std::string& key) const {
-        return parser_.GetValue(section, key);
-    }
-
-    void SetValue(const std::string& section, const std::string& key, const std::string& value) {
-        parser_.SetValue(section, key, value);
-    }
-
-    void Save(const std::string& file_name) {
-        parser_.Save(file_name);
-    }
-
-    bool getBoolean(const std::string& section, const std::string& key)
+    void PopulateValue()
     {
-        return stringToBool(GetValue(section, key));
-    }
+        auto data = parser_.Read();
+        if (data.is_null())
+        {
+            std::cout << "[+] Writing default settings.json\n";
+            nlohmann::json default_data = nlohmann::json::parse(R"(
+{"General": {"no_console": false,"enable_global": true},
+"Keybinds": {"enable": true,"tp_waypoint": "VK_F6","tp_objective": "VK_F7"},
+"Offsets": {"o_CPed": "0x8"}}
+            )");
+            parser_.Write(default_data);
+            data = default_data;
+        }
+        /*for (auto& el : data.items()) {
+            std::cout << el.key() << " : " << el.value() << "\n";
+        }*/
 
-private:
-    bool stringToBool(const std::string& str) {
-        std::string lowercaseStr = str;
-        std::transform(lowercaseStr.begin(), lowercaseStr.end(), lowercaseStr.begin(), ::tolower);
-        std::istringstream stream(lowercaseStr);
-        bool value;
-        stream >> std::boolalpha >> value;
-        return value;
+        is_console_hidden = data["General"]["no_console"];
+        is_globals_enabled = data["General"]["enable_global"];
+        is_keybind_active = data["Keybinds"]["enable"];
+        vk_hotkey_waypoint = StringToVirtualKeyCode(data["Keybinds"]["tp_waypoint"]);
+        vk_hotkey_objective = StringToVirtualKeyCode(data["Keybinds"]["tp_objective"]);
+
+        std::cout << "[+] Done reading settings\n";
     }
 
 public:
     bool is_console_hidden = false;
+    bool is_globals_enabled = true;
     bool is_always_ontop = false;
 
     bool is_god_mode = false;
@@ -108,8 +84,8 @@ public:
 
     bool is_keybind_active = true;
 
-    int vk_hotkey_waypoint;
-    int vk_hotkey_objective;
+    int vk_hotkey_waypoint = 0;
+    int vk_hotkey_objective = 0;
 private:
-    InIParser parser_;
+    JSONReader parser_;
 };

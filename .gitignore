@@ -405,3 +405,6 @@ GTConsole.rc
 resource.h
 
 build
+settings.json
+
+teleports.json

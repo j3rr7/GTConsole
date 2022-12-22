@@ -3,6 +3,7 @@
 #include "GTAModule.h"
 #include "Rendering.h"
 #include "Settings.h"
+#include "Teleports.h"
 
 bool checkRunning() {
 	auto m_hMutex = CreateMutex(NULL, FALSE, L"GTConsole.exe");
@@ -28,22 +29,19 @@ int main()
 	try
 	{
 		SetConsoleTitle(L"Log Console");
-
-		std::cout << "[+] Reading Settings...\n";
 		auto thread_pool = std::make_unique<ThreadPool>(4);
-		auto config_instance = std::make_unique<Config>("settings.ini");
 
-		g_config->getBoolean("General", "no_console") ? ::ShowWindow(::GetConsoleWindow(), SW_HIDE) : ::ShowWindow(::GetConsoleWindow(), SW_SHOW);
-		g_config->is_keybind_active = g_config->getBoolean("Keybinds", "enable");
-		g_config->vk_hotkey_waypoint = VkKeyScanA(g_config->GetValue("Keybinds", "key_waypoint")[0]);
-		g_config->vk_hotkey_objective = VkKeyScanA(g_config->GetValue("Keybinds", "key_objective")[0]);
-		std::cout << "[+] Settings Loaded\n";
+		auto config_instance = std::make_unique<Config>("settings.json");
+		config_instance->PopulateValue();
+
+		auto teleports_instance = std::make_unique<Teleports>("teleports.json");
+		teleports_instance->LoadTeleportData();
 
 		bool isRunning = true;
+		auto gui_instance = std::make_unique<Rendering>();
 
 		auto gta_instance = std::make_unique<GTAModule>();
 		auto pointers_instance = std::make_unique<Pointers>();
-		auto gui_instance = std::make_unique<Rendering>();
 
 		auto game_thread = [&]
 		{
@@ -71,11 +69,11 @@ int main()
 					if (GetAsyncKeyState(VK_END) & 0x1) { break; }
 
 					if (GetAsyncKeyState(g_config->vk_hotkey_waypoint) & 0x8000) {
-						gta5->to_waypoint(gta5->get_local_ped());
+						gta5->to_waypoint();
 					}
 
 					if (GetAsyncKeyState(g_config->vk_hotkey_objective) & 0x8000) {
-						gta5->to_objective(gta5->get_local_ped());
+						gta5->to_objective();
 					}
 				}
 
