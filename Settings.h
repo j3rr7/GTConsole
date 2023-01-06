@@ -74,6 +74,8 @@ public:
     }
 
 public:
+    // ToDo: change this into struct or class for better readability and serialization
+    bool is_anti_afk = false;
     bool is_console_hidden = false;
     bool is_globals_enabled = true;
     bool is_always_ontop = false;
@@ -85,6 +87,22 @@ public:
     bool is_disable_collision = false;
 
     bool is_keybind_active = true;
+
+    bool protect_ceo_kick = false;
+    bool protect_kick_crash = false;
+    bool protect_ceo_ban = false;
+    bool protect_sound_spam = false;
+    bool protect_inf_load = false;
+    bool protect_colectible = false;
+    bool protect_passive_mode = false;
+    bool protect_trans_error = false;
+    bool protect_remove_money_message = false;
+    bool protect_extra_teleport = false;
+    bool protect_clear_wanted = false;
+    bool protect_off_radar = false;
+    bool protect_send_cutscene = false;
+    bool protect_remote_godmode = false;
+    bool protect_personal_veh_destroy = false;
 
     int vk_hotkey_waypoint = 0;
     int vk_hotkey_objective = 0;

@@ -14,8 +14,8 @@
 #pragma comment (lib, "d3d11.lib")
 #pragma comment (lib, "d3dcompiler.lib")
 
-#define WINDOW_WIDTH 600
-#define WINDOW_HEIGHT 420
+#define WINDOW_WIDTH 720
+#define WINDOW_HEIGHT 460
 
 namespace nsRendering {
 	static inline LRESULT __stdcall WndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam);
@@ -33,7 +33,7 @@ public:
 	IDXGISwapChain* g_pSwapChain = NULL;
 	ID3D11RenderTargetView* g_mainRenderTargetView = NULL;
 
-	bool is_running = false;
+	bool is_running_ = false;
 
 	HWND hWnd = nullptr;
 	WNDCLASSEXW wc{};
@@ -50,6 +50,9 @@ public:
 	void CreateRenderTarget();
 	void CleanupRenderTarget();
 
+	bool is_running() {
+		return this->is_running_;
+	}
 private:
 	void dx_menu();
 };

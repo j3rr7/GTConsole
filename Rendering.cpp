@@ -2,7 +2,7 @@
 
 Rendering::Rendering()
 {
-	is_running = true;
+	is_running_ = true;
 	g_rendering = this;
 }
 
@@ -77,8 +77,8 @@ void Rendering::on_init()
     style.Colors[ImGuiCol_ScrollbarGrabHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.78f);
     style.Colors[ImGuiCol_ScrollbarGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
     style.Colors[ImGuiCol_CheckMark] = ImVec4(col_main.x + 0.3f, col_main.y + 0.3f, col_main.z, 0.90f);
-    style.Colors[ImGuiCol_SliderGrab] = ImVec4(col_main.x, col_main.y, col_main.z, 0.24f);
-    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
+    style.Colors[ImGuiCol_SliderGrab] = ImVec4(col_main.x + 0.3f, col_main.y, col_main.z + 0.3f, 0.24f);
+    style.Colors[ImGuiCol_SliderGrabActive] = ImVec4(col_main.x + 0.3f, col_main.y, col_main.z + 0.3f, 1.00f);
     style.Colors[ImGuiCol_Button] = ImVec4(col_main.x, col_main.y, col_main.z, 0.44f);
     style.Colors[ImGuiCol_ButtonHovered] = ImVec4(col_main.x, col_main.y, col_main.z, 0.86f);
     style.Colors[ImGuiCol_ButtonActive] = ImVec4(col_main.x, col_main.y, col_main.z, 1.00f);
@@ -107,11 +107,10 @@ void Rendering::on_tick()
         ::DispatchMessage(&msg);
         if (msg.message == WM_QUIT)
         {
-            is_running = false;
+            is_running_ = false;
         }
     }
 
-    // Start the Dear ImGui frame
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
     ImGui::NewFrame();
@@ -135,7 +134,6 @@ void Rendering::on_tick()
     }
     ImGui::PopStyleVar(2);
 
-    // Rendering
     ImGui::Render();
     const float clear_color_with_alpha[4] = { clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w };
     g_pd3dDeviceContext->OMSetRenderTargets(1, &g_mainRenderTargetView, NULL);
@@ -212,8 +210,7 @@ void Rendering::CleanupRenderTarget()
 
 void Rendering::dx_menu()
 {
-    ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
-    if (ImGui::BeginTabBar("Sub Menu", tab_bar_flags))
+    if (ImGui::BeginTabBar("Sub Menu", ImGuiTabBarFlags_None))
     {
         if (ImGui::BeginTabItem("Self"))
         {
@@ -223,90 +220,175 @@ void Rendering::dx_menu()
             {
                 if (!g_config->is_disable_collision)
                 {
-                    auto p1 = gta5->readMemory<int64_t>(gta5->get_local_ped() + 0x30, { 0x10,0x20,0x70,0x0 });
-                    gta5->writeMemory<float>(p1 + 0x2C, {}, 0.25f);
+                    g_thread_pool->enqueue([] {
+                        if (auto p1 = gta5->readMemory<int64_t>(gta5->get_local_ped() + 0x30, { 0x10,0x20,0x70,0x0 }))
+                        {
+                            gta5->writeMemory<float>(p1 + 0x2C, {}, 0.25f);
+                        }
+                        });
                 }
             }
 
             ImGui::Dummy(ImVec2(0, 10));
 
             ImGui::Checkbox("No Wanted", &g_config->is_never_wanted);
+            
+            if (auto wanted_level_ptr = g_thread_pool->enqueue([] {
 
-            static int wanted_level = gta5->readMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 });
-            if (ImGui::SliderInt("Wanted Level", &wanted_level, 0, 5))
+                return gta5->readMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 });
+
+                }); wanted_level_ptr.valid())
             {
-                gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, wanted_level);
+                static int wanted_level = static_cast<int>(wanted_level_ptr.get());
+
+                if (ImGui::SliderInt("Wanted Level", &wanted_level, 0, 5))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, wanted_level);
+                        });
+                }
+            }
+
+            ImGui::Dummy(ImVec2(0, 10));
+
+            if (ImGui::CollapsingHeader("Session"))
+            {
+                if (ImGui::Button("Create Public Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(1);
+                        });
+                }
+                if (ImGui::Button("Join Public Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(0);
+                        });
+                }
+                if (ImGui::Button("Invite Only Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(11);
+                        });
+                }
+                if (ImGui::Button("Find Friend Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(9);
+                        });
+                }
+                if (ImGui::Button("Closed Friend Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(6);
+                        });
+                }
+                if (ImGui::Button("Create Crew Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(3);
+                        });
+                }
+                if (ImGui::Button("Create Closed Crew Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(2);
+                        });
+                }
+                if (ImGui::Button("Join Crew Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(12);
+                        });
+                }
+                if (ImGui::Button("Solo Session"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(10);
+                        });
+                }
+                if (ImGui::Button("Leave Online"))
+                {
+                    g_thread_pool->enqueue([] {
+                        gta5->load_session(-1);
+                        });
+                }
             }
 
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Session"))
+        if (ImGui::BeginTabItem("Teleport"))
         {
-            if (ImGui::Button("Create Public Session"))
+            if (ImGui::Button("Tp to personal vehicle"))
             {
-
+                g_thread_pool->enqueue([] {
+                    gta5->SG<int>(2639783 + 8, 1);
+                    });
             }
-            if (ImGui::Button("Join Public Session"))
-            {
 
-            }
-            if (ImGui::Button("Invite Only Session"))
-            {
+            ImGui::Dummy(ImVec2(0, 5));
 
-            }
-            if (ImGui::Button("Find Friend Session"))
-            {
+            if (ImGui::Button("Teleport to Waypoint (Hotkey)"))
+                g_thread_pool->enqueue([] { gta5->to_waypoint(); });
 
-            }
-            if (ImGui::Button("Closed Friend Session"))
-            {
+            ImGui::SameLine();
 
-            }
-            if (ImGui::Button("Create Crew Session"))
-            {
-
-            }
-            if (ImGui::Button("Create Closed Crew Session"))
-            {
-
-            }
-            if (ImGui::Button("Join Crew Session"))
-            {
-
-            }
-            if (ImGui::Button("Solo Session"))
-            {
-
-            }
-            if (ImGui::Button("Network Bail/Leave Online"))
-            {
-
-            }
+            if (ImGui::Button("Teleport to Objective (Hotkey)"))
+                g_thread_pool->enqueue([] { gta5->to_objective(); });
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Teleport Presist"))
+        if (ImGui::BeginTabItem("Custom Teleport"))
         {
             ImGui::BeginChild("##teleport_location", ImVec2(225.f, -30.f), true, NULL);
 
-            static auto list_teleport = g_teleports->GetTeleportList();
+            auto list_teleport = g_teleports->GetTeleportList();
             for (auto it = list_teleport.begin(); it != list_teleport.end(); it++) {
-                int index = std::abs(std::distance(list_teleport.begin(), it));
+                auto index = std::abs(std::distance(list_teleport.begin(), it));
                 const bool is_selected = (g_teleports->sel_index_tp == index);
                 std::string name = it->at("name");
                 name.append("##" + std::to_string(index));
                 if (ImGui::Selectable(name.c_str(), is_selected))
                 {
-                    g_teleports->sel_index_tp = index;
-                    gta5->entity_set_position(gta5->get_local_ped(), { it->at("x"), it->at("y"), it->at("z") });
+                    g_teleports->sel_index_tp = static_cast<int>(index);
+                    ImGui::OpenPopup("Teleport?");
                 }
                 if (is_selected)
                 {
                     ImGui::SetItemDefaultFocus();
                 }
             }
-            list_teleport = g_teleports->GetTeleportList();
+
+            if (ImGui::BeginPopupModal("Teleport?", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                Vector3 teleLocation = {
+                    list_teleport[g_teleports->sel_index_tp].at("x"),
+                    list_teleport[g_teleports->sel_index_tp].at("y"),
+                    list_teleport[g_teleports->sel_index_tp].at("z")
+                };
+                ImGui::Text("Teleport to this location?\nX:%.3f Y:%.3f, Z:%.3f", 
+                    teleLocation.x,
+                    teleLocation.y,
+                    teleLocation.z
+                    );
+                ImGui::Separator();
+
+                if (ImGui::Button("YES", ImVec2(120, 0))) { 
+                    g_thread_pool->enqueue([&] {
+                        gta5->entity_set_position(gta5->get_local_ped(),
+                            { list_teleport[g_teleports->sel_index_tp].at("x"),
+                              list_teleport[g_teleports->sel_index_tp].at("y"),
+                              list_teleport[g_teleports->sel_index_tp].at("z") }
+                            );
+                        });
+                    ImGui::CloseCurrentPopup(); 
+                }
+                ImGui::SetItemDefaultFocus();
+                ImGui::SameLine();
+                if (ImGui::Button("Cancel", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+                ImGui::EndPopup();
+            }
 
             ImGui::EndChild();
 
@@ -314,12 +396,12 @@ void Rendering::dx_menu()
 
             ImGui::BeginGroup();
             ImGui::Dummy(ImVec2(0, 5));
-            if (ImGui::Button("Teleport to Waypoint"))
+            if (ImGui::Button("Teleport to Waypoint (Hotkey)"))
                 g_thread_pool->enqueue([] { gta5->to_waypoint(); });
 
             ImGui::SameLine();
 
-            if (ImGui::Button("Teleport to Objective"))
+            if (ImGui::Button("Teleport to Objective (Hotkey)"))
                 g_thread_pool->enqueue([] { gta5->to_objective(); });
 
             ImGui::Dummy(ImVec2(0, 25));
@@ -329,10 +411,12 @@ void Rendering::dx_menu()
 
             if (ImGui::Button("Append Current Location"))
             {
+                auto fEntityLoc = g_thread_pool->enqueue([] { return gta5->get_entity_location(gta5->get_local_ped()); });
+                Vector3 currentLocation = fEntityLoc.get();
                 if (strlen(teleport_name) == 0)
-                    g_teleports->appendLocation("Unnamed Location", gta5->get_entity_location(gta5->get_local_ped()));
+                    g_teleports->appendLocation("Unnamed Location", currentLocation);
                 else
-                    g_teleports->appendLocation(teleport_name, gta5->get_entity_location(gta5->get_local_ped()));
+                    g_teleports->appendLocation(teleport_name, currentLocation);
             }
             ImGui::SameLine();
             if (ImGui::Button("Delete"))
@@ -362,24 +446,9 @@ void Rendering::dx_menu()
                     Vector3 new_pos{
                         ped_pos.x - (heading.y * 5.f),
                         ped_pos.y + (heading.x * 5.f),
-                        ped_pos.z + 0.5f
+                        ped_pos.z + 1.5f
                     };
                     gta5->create_basic_vehicle(modelHash, new_pos, false);
-                    });
-            }
-
-            if (ImGui::Button("Simple Vehicle Spawn"))
-            {
-                g_thread_pool->enqueue([] {
-                    Vector3 ped_pos = gta5->get_entity_location(gta5->get_local_ped());
-                    uint32_t modelHash = gta5->joaat(model_hash);
-                    Vector2 heading = gta5->readMemory<Vector2>(gta5->get_local_ped() + 0x30, { 0x20 });
-                    Vector3 new_pos{
-                        ped_pos.x - (heading.y * 5.f),
-                        ped_pos.y + (heading.x * 5.f),
-                        ped_pos.z + 0.5f
-                    };
-                    gta5->simple_vehicle_spawner(modelHash, new_pos, false);
                     });
             }
 
@@ -393,13 +462,6 @@ void Rendering::dx_menu()
                 g_thread_pool->enqueue([] {
                     gta5->SG<int>(1653913 + 1156, -1);
                     gta5->SG<int>(1653913 + 1172, -1);
-                    });
-            }
-
-            if (ImGui::Button("Tp to personal vehicle"))
-            {
-                g_thread_pool->enqueue([] {
-                    gta5->SG<int>(2639783 + 8, 1);
                     });
             }
 
@@ -444,6 +506,278 @@ void Rendering::dx_menu()
                         });                
             }
 
+            if (ImGui::CollapsingHeader("Protection"))
+            {
+                if (ImGui::Checkbox("Block Ceo Kick", &g_config->protect_ceo_kick))
+                {
+                    if (g_config->protect_ceo_kick)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669984, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669984, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Ceo Ban", &g_config->protect_ceo_ban)) {
+                    if (g_config->protect_ceo_ban)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670006, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670006, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Some Kicks/Crashes", &g_config->protect_kick_crash)) {
+                    if (g_config->protect_kick_crash)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670036, 1);
+                            gta5->SG<bool>(1670051, 1);
+                            gta5->SG<bool>(1669951, 1);
+                            gta5->SG<bool>(1670028, 1);
+                            gta5->SG<bool>(1670238, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670036, 0);
+                            gta5->SG<bool>(1670051, 0);
+                            gta5->SG<bool>(1669951, 0);
+                            gta5->SG<bool>(1670028, 0);
+                            gta5->SG<bool>(1670238, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Sound Spam", &g_config->protect_sound_spam)) {
+                    if (g_config->protect_sound_spam)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669879, 1);
+                            gta5->SG<bool>(1670243, 1);
+                            gta5->SG<bool>(1669394, 1);
+                            gta5->SG<bool>(1670529, 1);
+                            gta5->SG<bool>(1670058, 1);
+                            gta5->SG<bool>(1669421, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669879, 0);
+                            gta5->SG<bool>(1670243, 0);
+                            gta5->SG<bool>(1669394, 0);
+                            gta5->SG<bool>(1670529, 0);
+                            gta5->SG<bool>(1670058, 0);
+                            gta5->SG<bool>(1669421, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Infinite Loadingscreen", &g_config->protect_inf_load)) {
+                    if (g_config->protect_inf_load)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669947, 1);
+                            gta5->SG<bool>(1670076, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669947, 0);
+                            gta5->SG<bool>(1670076, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Give Collectibles", &g_config->protect_colectible)) {
+                    if (g_config->protect_colectible)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670208, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670208, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Passive Mode", &g_config->protect_passive_mode))
+                {
+                    if (g_config->protect_passive_mode)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669996, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669996, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Transaction Error", &g_config->protect_trans_error))
+                {
+                    if (g_config->protect_trans_error)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669797, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669797, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Modded Notifys/SMS", &g_config->protect_remove_money_message))
+                {
+                    if (g_config->protect_remove_money_message)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669880, 1);
+                            gta5->SG<bool>(1669426, 1);
+                            gta5->SG<bool>(1670057, 1);
+                            gta5->SG<bool>(1669428, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669880, 0);
+                            gta5->SG<bool>(1669426, 0);
+                            gta5->SG<bool>(1670057, 0);
+                            gta5->SG<bool>(1669428, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Cayo && Beach Teleport", &g_config->protect_extra_teleport))
+                {
+                    if (g_config->protect_extra_teleport)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669741, 1);
+                            gta5->SG<bool>(1670138, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669741, 0);
+                            gta5->SG<bool>(1670138, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Clear Wanted", &g_config->protect_clear_wanted))
+                {
+                    if (g_config->protect_clear_wanted)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669938, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669938, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Off The Radar", &g_config->protect_off_radar))
+                {
+                    if (g_config->protect_off_radar)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669940, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669940, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Send to Cutscene", &g_config->protect_send_cutscene))
+                {
+                    if (g_config->protect_send_cutscene)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670198, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1670198, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Remove Godmode", &g_config->protect_remote_godmode))
+                {
+                    if (g_config->protect_remote_godmode)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669396, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669396, 0);
+                            });
+                    }
+                }
+
+                if (ImGui::Checkbox("Block Personal Vehicle Destroy", &g_config->protect_personal_veh_destroy))
+                {
+                    if (g_config->protect_personal_veh_destroy)
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669480, 1);
+                            gta5->SG<bool>(1670063, 1);
+                            gta5->SG<bool>(1669947, 1);
+                            });
+                    }
+                    else
+                    {
+                        g_thread_pool->enqueue([] {
+                            gta5->SG<bool>(1669480, 0);
+                            gta5->SG<bool>(1670063, 0);
+                            gta5->SG<bool>(1669947, 0);
+                            });
+                    }
+                }
+            }
+
+            ImGui::Separator();
+
             if (ImGui::CollapsingHeader("Special Cargo"))
             {
                 if (ImGui::Button("No Sell Cooldown"))
@@ -463,71 +797,73 @@ void Rendering::dx_menu()
                     gta5->SL("GB_CONTRABAND_BUY", 598 + 192, 4);
                 }
 
+                static int cargo_sell_mult = 100;
+                ImGui::SliderInt("Cargo Sell Price", &cargo_sell_mult, 0, 5000000);
                 if (ImGui::Button("Set Sell Price (3.2M)"))
                 {
-                    auto sale_price = 327132; //5000000
                     auto base_address = 15788;
-                    gta5->SG<int>(262145 + base_address, sale_price);
-                    gta5->SG<int>(262145 + base_address + 1, sale_price);
-                    gta5->SG<int>(262145 + base_address + 2, sale_price);
-                    gta5->SG<int>(262145 + base_address + 3, sale_price);
-                    gta5->SG<int>(262145 + base_address + 4, sale_price);
-                    gta5->SG<int>(262145 + base_address + 5, sale_price);
-                    gta5->SG<int>(262145 + base_address + 6, sale_price);
-                    gta5->SG<int>(262145 + base_address + 7, sale_price);
-                    gta5->SG<int>(262145 + base_address + 8, sale_price);
-                    gta5->SG<int>(262145 + base_address + 9, sale_price);
-                    gta5->SG<int>(262145 + base_address + 10, sale_price);
-                    gta5->SG<int>(262145 + base_address + 11, sale_price);
-                    gta5->SG<int>(262145 + base_address + 12, sale_price);
-                    gta5->SG<int>(262145 + base_address + 13, sale_price);
-                    gta5->SG<int>(262145 + base_address + 14, sale_price);
-                    gta5->SG<int>(262145 + base_address + 15, sale_price);
-                    gta5->SG<int>(262145 + base_address + 16, sale_price);
-                    gta5->SG<int>(262145 + base_address + 17, sale_price);
-                    gta5->SG<int>(262145 + base_address + 18, sale_price);
-                    gta5->SG<int>(262145 + base_address + 19, sale_price);
-                    gta5->SG<int>(262145 + base_address + 20, sale_price);
+                    gta5->SG<int>(262145 + base_address, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 1, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 2, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 3, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 4, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 5, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 6, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 7, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 8, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 9, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 10, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 11, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 12, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 13, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 14, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 15, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 16, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 17, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 18, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 19, cargo_sell_mult);
+                    gta5->SG<int>(262145 + base_address + 20, cargo_sell_mult);
                 }
             }
 
             if (ImGui::CollapsingHeader("Nightclub"))
             {
+                static int nightclub_sale_price=100; //138000
+                ImGui::SliderInt("Nightclub Sales Price", &nightclub_sale_price, 0, 140000);
                 if (ImGui::Button("NightClub Sell Change Price"))
                 {
-                    auto sale_price = 138000;
                     auto base_address = 24381;// --offset for v 1.64 nightclub goods
-                    gta5->SG<int>(262145 + base_address, sale_price);
-                    gta5->SG<int>(262145 + base_address + 1, sale_price);
-                    gta5->SG<int>(262145 + base_address + 2, sale_price);
-                    gta5->SG<int>(262145 + base_address + 3, sale_price);
-                    gta5->SG<int>(262145 + base_address + 4, sale_price);
-                    gta5->SG<int>(262145 + base_address + 5, sale_price);
-                    gta5->SG<int>(262145 + base_address + 6, sale_price);
+                    gta5->SG<int>(262145 + base_address, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 1, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 2, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 3, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 4, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 5, nightclub_sale_price);
+                    gta5->SG<int>(262145 + base_address + 6, nightclub_sale_price);
                 }
             }
 
             ImGui::EndTabItem();
         }
 
-        if (ImGui::BeginTabItem("Stats"))
-        {
-            static char stats_name[256];
-            ImGui::InputText("Name", stats_name, IM_ARRAYSIZE(stats_name));
-            /*
-            static std::string stat_name;
-            gta5->GG<int>(1574918); grab mp0 or mp1 player
-            auto stat_hash = rage::joaat(stat_name);
-            auto oldhash = gta5->GG<int>(1665454+4)
-            auto oldvalue = gta5->GG<int>(1010831+5525)
-            gta5->SG<int>(1665454+4,hash)
-            gta5->SG<int>(1010831+5525,value)
-            gta5->SG<int>(1653913+1139,-1)
-            gta5->SG<int>(1665454+4,oldhash)
-            gta5->SG<int>(1010831+5525,oldvalue)
-            */
-            ImGui::EndTabItem();
-        }
+        //if (ImGui::BeginTabItem("Stats"))
+        //{
+        //    static char stats_name[256];
+        //    ImGui::InputText("Name", stats_name, IM_ARRAYSIZE(stats_name));
+        //    /*
+        //    static std::string stat_name;
+        //    gta5->GG<int>(1574918); grab mp0 or mp1 player
+        //    auto stat_hash = rage::joaat(stat_name);
+        //    auto oldhash = gta5->GG<int>(1665454+4)
+        //    auto oldvalue = gta5->GG<int>(1010831+5525)
+        //    gta5->SG<int>(1665454+4,hash)
+        //    gta5->SG<int>(1010831+5525,value)
+        //    gta5->SG<int>(1653913+1139,-1)
+        //    gta5->SG<int>(1665454+4,oldhash)
+        //    gta5->SG<int>(1010831+5525,oldvalue)
+        //    */
+        //    ImGui::EndTabItem();
+        //}
 
         if (ImGui::BeginTabItem("Unlocks"))
         {
@@ -555,21 +891,28 @@ void Rendering::dx_menu()
                 }
             }
 
-            ImGui::Checkbox("Keybinds Enabled", &g_config->is_keybind_active);
-
             ImGui::Checkbox("Globals Enabled", &g_config->is_globals_enabled);
+
+            ImGui::Checkbox("Keybinds Enabled", &g_config->is_keybind_active);
 
             if (ImGui::Button("DEBUG BUTTON"))
             {
-                
+                for (int i = 0; i < 54; i++)
+                {
+                    std::string str = gta5->read_str(g_pointers->LocalScriptsPTR, MAX_PATH, { i * 0x8, 0xD4 });
+                    std::cout << "Str Name: " << str << "\n";
+                    auto dbgptr = gta5->readMemory<int64_t>(g_pointers->LocalScriptsPTR, { i * 0x8, 0xB0 }) + 8 * 0;
+                    std::cout << "Ptr: " << dbgptr << "\n";
+                }
             }
+
             ImGui::EndTabItem();
         }
 
         ImGui::EndTabBar();
     }
 
-    ImGui::SetCursorPosY((ImGui::GetWindowSize().y - 27.f));
+    ImGui::SetCursorPosY((ImGui::GetWindowSize().y + ImGui::GetScrollY() - 27.f));
     ImGui::Separator();
     ImGui::Text("Frame %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 }
