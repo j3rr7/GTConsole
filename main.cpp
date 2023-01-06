@@ -5,31 +5,24 @@
 #include "Settings.h"
 #include "Teleports.h"
 
-#define RELEASE
-
-bool checkRunning() {
-	auto m_hMutex = CreateMutex(NULL, FALSE, L"GTConsole.exe");
-	switch (GetLastError())
-	{
-	case ERROR_SUCCESS:
-		break;
-
-	case ERROR_ALREADY_EXISTS:
-	default:
-		return true;
-	}
-	return false;
-}
-
 int main()
 {
-	if (checkRunning())
-	{
-		MessageBoxA(NULL, "Another instance is already running!\nOnly one instance is allowed to running", "Error", MB_ICONSTOP | MB_ICONERROR | MB_ICONHAND);
-		return 1;
-	}
 	try
 	{
+		// Check first if thread already exist
+		// Note: Exe name muse be GTConsole please change this accordingly
+		auto m_hMutex = CreateMutex(NULL, FALSE, L"GTConsole.exe");
+		switch (GetLastError())
+		{
+		case ERROR_SUCCESS:
+			break;
+
+		case ERROR_ALREADY_EXISTS:
+		default:
+			MessageBoxA(NULL, "Another instance is already running!\nOnly one instance is allowed to running", "Error", MB_ICONSTOP | MB_ICONERROR | MB_ICONHAND);
+			return TRUE;
+		}
+
 		SetConsoleTitle(L"Log Console");
 		auto thread_pool = std::make_unique<ThreadPool>(4);
 
@@ -41,8 +34,6 @@ int main()
 
 		bool isRunning = true;
 		auto gui_instance = std::make_unique<Rendering>();
-
-//#ifdef RELEASE
 		auto gta_instance = std::make_unique<GTAModule>();
 		auto pointers_instance = std::make_unique<Pointers>();
 
@@ -69,8 +60,6 @@ int main()
 			{
 				if (g_config->is_keybind_active)
 				{
-					// if (GetAsyncKeyState(VK_END) & 0x1) { break; }
-
 					if (GetAsyncKeyState(g_config->vk_hotkey_waypoint) & 0x8000) {
 						gta5->to_waypoint();
 					}
@@ -88,12 +77,12 @@ int main()
 		};
 
 		thread_pool->enqueue(game_thread);
-//#endif
+
 		auto rendering_thread = [&]
 		{
 			gui_instance->on_init();
 
-			while (isRunning && gui_instance->is_running)
+			while (isRunning && gui_instance->is_running())
 			{
 				gui_instance->on_tick();
 

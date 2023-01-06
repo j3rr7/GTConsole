@@ -4,7 +4,7 @@ nlohmann::json Teleports::LoadTeleportData()
 {
 	auto data = parser_.Read();
 	if (data.is_null()) {
-		std::cerr << "[!] Couldn't find teleports data\n[+] Creating new...";
+		std::cerr << "[!] Couldn't find teleports data\n[+] Creating new...\n";
 		nlohmann::json j;
 		j["Locations"] = {};
 		data = j;

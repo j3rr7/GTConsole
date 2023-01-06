@@ -59,7 +59,8 @@ public:
 	uint32_t joaat(std::string str);
 
 	void create_basic_vehicle(uint32_t modelHash, Vector3 location, bool is_pegasus);
-	void simple_vehicle_spawner(uint32_t modelHash, Vector3 location, bool is_pegasus);
+
+	void load_session(int session_id);
 
 	bool Is_Bit_Set(int _value, int _bit) {
 		if ((_value >> _bit) & 1LL) 

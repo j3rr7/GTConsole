@@ -72,6 +72,19 @@ public:
         return res;
     }
 
+    template <typename F, typename... Args>
+    auto check_return_value(F&& f, Args&&... args)
+        -> std::invoke_result_t<F, Args...> {
+        auto result = std::invoke(std::forward<F>(f), std::forward<Args>(args)...);
+        if constexpr (std::is_void_v<std::invoke_result_t<F, Args...>>) {
+            std::cout << "The function did not return a value" << std::endl;
+        }
+        else {
+            std::cout << "The function returned a value" << std::endl;
+        }
+        return result;
+    }
+
 private:
     std::vector<std::thread> workers_;
     std::queue<Task> tasks_;

@@ -1,6 +1,6 @@
 #include "GTAModule.h"
 
-GTAModule::GTAModule(): Memory(L"GTA5.exe")
+GTAModule::GTAModule() : Memory(L"GTA5.exe")
 {
     gta5 = this;
 }
@@ -14,15 +14,21 @@ void GTAModule::on_tick()
 {
     if (g_config->is_god_mode)
     {
-        gta5->writeMemory<float>(get_local_ped() + 0x280, {}, 325);
-        gta5->writeMemory<float>(get_local_ped() + 0x284, {}, 325);
-        gta5->writeMemory<float>(get_local_ped() + 0x150C, {}, 50); // 50 online | 100 offline
-
-        std::this_thread::yield();
+        // Only write if armor or health below certain threshold
+        if (gta5->readMemory<float>(get_local_ped() + 0x280) < 325 ||
+            gta5->readMemory<float>(get_local_ped() + 0x150C) < 50
+            )
+        {
+            gta5->writeMemory<float>(get_local_ped() + 0x280, {}, 325);
+            gta5->writeMemory<float>(get_local_ped() + 0x284, {}, 325);
+            gta5->writeMemory<float>(get_local_ped() + 0x150C, {}, 50); // 50 online | 100 offline
+        }
     }
     if (g_config->is_never_wanted)
     {
-        gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, 0);
+        // Only write if wanted level more than 0
+        if (gta5->readMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }) > 0)
+            gta5->writeMemory<int>(gta5->get_local_ped() + 0x10A8, { 0x888 }, 0);
     }
     if (g_config->is_disable_collision)
     {
@@ -42,7 +48,7 @@ int64_t GTAModule::LA(std::string name, int index)
 {
     for (int i = 0; i < 54; i++)
     {
-        std::string str = read_str(g_pointers->LocalScriptsPTR, MAX_PATH, { i * 0x8, 0xD0 });
+        std::string str = read_str(g_pointers->LocalScriptsPTR, MAX_PATH, { i * 0x8, 0xD4 });
         if (str == name) { return readMemory<int64_t>(g_pointers->LocalScriptsPTR, { i * 0x8, 0xB0 }) + 8 * index; }
     }
     return 0;
@@ -187,16 +193,34 @@ void GTAModule::create_basic_vehicle(uint32_t modelHash, Vector3 location, bool 
     SG<int>(2694560 + 27 + 94, 2); // personal car ownerflag
 }
 
-void GTAModule::simple_vehicle_spawner(uint32_t modelHash, Vector3 location, bool is_pegasus)
+void GTAModule::load_session(int session_id)
 {
     if (!g_config->is_globals_enabled)
-        return
+        return;
 
-    SG<float>(2639783 + 7 + 0, location.x);
-    SG<float>(2639783 + 7 + 1, location.y);
-    SG<float>(2639783 + 7 + 2, location.z);
-    SG<uint32_t>(2639783 + 27 + 66, modelHash);
-    SG<int>(2639783 + 3, is_pegasus);
-    SG(2639783 + 5, 1); // car spawn flag odd
-    SG(2639783 + 2, 1); // car spawn toggle
+    switch (session_id)
+    {
+        case -1:
+            gta5->SG<int>(1574589 + 2, -1);
+            gta5->SG<int>(1574589, 1);
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            gta5->SG<int>(1574589, 0);
+            break;
+        case 0: // join public
+        case 1: // new public
+        case 2: // closed crew
+        case 3: // crew session
+        case 6: // closed friend
+        case 9: // find friend
+        case 10: // solo
+        case 11: // invite only
+        case 12: // join crew
+            gta5->SG<int>(1575017, session_id);
+            gta5->SG<int>(1574589, 1);
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            gta5->SG<int>(1574589, 0);
+            break;
+        default:
+            std::cout << "[~] Session Type: " << gta5->GG<int>(1574589 + 2) << ", Transition: " << gta5->GG<int>(1574589) << "\n";
+    }
 }
