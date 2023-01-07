@@ -106,6 +106,10 @@ public:
 
     int vk_hotkey_waypoint = 0;
     int vk_hotkey_objective = 0;
+
+    struct GOffsets {
+        uint64_t GlobalOffset = 262145;
+    };
 private:
     JSONReader parser_;
 };

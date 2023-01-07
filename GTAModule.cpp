@@ -224,3 +224,14 @@ void GTAModule::load_session(int session_id)
             std::cout << "[~] Session Type: " << gta5->GG<int>(1574589 + 2) << ", Transition: " << gta5->GG<int>(1574589) << "\n";
     }
 }
+
+template<typename T>
+inline void GTAModule::setStat(std::string stat, T value)
+{
+    int playerIndex = GG<int>(1574918);
+    std::string hashedStr;
+    if (stat.find("MPX") != std::string::npos) {}
+    std::string prepStr = replaceString("MPX_", "X", playerIndex);
+    hashedStr = joaat(prepStr);
+
+}

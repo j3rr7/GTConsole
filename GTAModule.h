@@ -5,6 +5,8 @@
 #include "Pointers.h"
 #include "Settings.h"
 
+// Build 2802/1.64
+
 class GTAModule : public Memory
 {
 public:
@@ -62,6 +64,9 @@ public:
 
 	void load_session(int session_id);
 
+	template <typename T>
+	void setStat(std::string stat, T value);
+
 	bool Is_Bit_Set(int _value, int _bit) {
 		if ((_value >> _bit) & 1LL) 
 			return true;
@@ -72,6 +77,17 @@ public:
 	}
 	int Clear_Bit(int _value, int _bit) {
 		return _value &= ~(1LL << _bit);
+	}
+
+private:
+	// utility for setStat
+	std::string replaceString(std::string str, std::string search, int replace) {
+		std::string replaceStr = std::to_string(replace);
+		size_t pos = str.find(search);
+		if (pos != std::string::npos) {
+			str.replace(pos, search.length(), replaceStr);
+		}
+		return str;
 	}
 };
 

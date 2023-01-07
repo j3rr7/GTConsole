@@ -315,20 +315,15 @@ void Rendering::dx_menu()
                 }
             }
 
+            ImGui::Separator();
+            ImGui::Text("");
+            ImGui::Dummy(ImVec2(0, 15));
+
             ImGui::EndTabItem();
         }
 
         if (ImGui::BeginTabItem("Teleport"))
         {
-            if (ImGui::Button("Tp to personal vehicle"))
-            {
-                g_thread_pool->enqueue([] {
-                    gta5->SG<int>(2639783 + 8, 1);
-                    });
-            }
-
-            ImGui::Dummy(ImVec2(0, 5));
-
             if (ImGui::Button("Teleport to Waypoint (Hotkey)"))
                 g_thread_pool->enqueue([] { gta5->to_waypoint(); });
 
@@ -337,6 +332,15 @@ void Rendering::dx_menu()
             if (ImGui::Button("Teleport to Objective (Hotkey)"))
                 g_thread_pool->enqueue([] { gta5->to_objective(); });
             ImGui::EndTabItem();
+
+            ImGui::Dummy(ImVec2(0, 15));
+
+            if (ImGui::Button("Tp to personal vehicle"))
+            {
+                g_thread_pool->enqueue([] {
+                    gta5->SG<int>(2639783 + 8, 1);
+                    });
+            }
         }
 
         if (ImGui::BeginTabItem("Custom Teleport"))
@@ -395,15 +399,6 @@ void Rendering::dx_menu()
             ImGui::SameLine();
 
             ImGui::BeginGroup();
-            ImGui::Dummy(ImVec2(0, 5));
-            if (ImGui::Button("Teleport to Waypoint (Hotkey)"))
-                g_thread_pool->enqueue([] { gta5->to_waypoint(); });
-
-            ImGui::SameLine();
-
-            if (ImGui::Button("Teleport to Objective (Hotkey)"))
-                g_thread_pool->enqueue([] { gta5->to_objective(); });
-
             ImGui::Dummy(ImVec2(0, 25));
             ImGui::Text("Teleport Name");
             static char teleport_name[128];
@@ -411,12 +406,16 @@ void Rendering::dx_menu()
 
             if (ImGui::Button("Append Current Location"))
             {
-                auto fEntityLoc = g_thread_pool->enqueue([] { return gta5->get_entity_location(gta5->get_local_ped()); });
-                Vector3 currentLocation = fEntityLoc.get();
-                if (strlen(teleport_name) == 0)
-                    g_teleports->appendLocation("Unnamed Location", currentLocation);
-                else
-                    g_teleports->appendLocation(teleport_name, currentLocation);
+                if (auto fEntityLoc = g_thread_pool->enqueue([] { 
+                    return gta5->get_entity_location(gta5->get_local_ped()); 
+                    }); fEntityLoc.valid())
+                {
+                    Vector3 currentLocation = fEntityLoc.get();
+                    if (strlen(teleport_name) == 0)
+                        g_teleports->appendLocation("Unnamed Location", currentLocation);
+                    else
+                        g_teleports->appendLocation(teleport_name, currentLocation);
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("Delete"))
@@ -446,17 +445,20 @@ void Rendering::dx_menu()
                     Vector3 new_pos{
                         ped_pos.x - (heading.y * 5.f),
                         ped_pos.y + (heading.x * 5.f),
-                        ped_pos.z + 1.5f
+                        ped_pos.z + 0.5f
                     };
                     gta5->create_basic_vehicle(modelHash, new_pos, false);
                     });
             }
-
             ImGui::EndTabItem();
         }
 
         if (ImGui::BeginTabItem("Online"))
         {
+            if (ImGui::Button("GetCurPlayerOffset"))
+            {
+                std::cout << "Player: " << gta5->GG<int>(1574918) << "\n";
+            }
             if (ImGui::Button("Disable AFK interfal"))
             {
                 g_thread_pool->enqueue([] {
@@ -877,6 +879,25 @@ void Rendering::dx_menu()
             ImGui::EndTabItem();
         }
 
+        if (ImGui::BeginTabItem("Unsafe!")) // enjoy ban :D
+        {
+            if (ImGui::Button("Orbital 500k"))
+            {
+                g_thread_pool->enqueue([] {
+                    gta5->SG<int>(1968313, 1);
+                    });
+            }
+
+            if (ImGui::Button("Orbital 750k"))
+            {
+                g_thread_pool->enqueue([] {
+                    gta5->SG<int>(1968313, 2);
+                    });
+            }
+            
+            ImGui::EndTabItem();
+        }
+
         if (ImGui::BeginTabItem("Options"))
         {
             if (ImGui::Checkbox("Always On Top", &g_config->is_always_ontop))
@@ -900,9 +921,7 @@ void Rendering::dx_menu()
                 for (int i = 0; i < 54; i++)
                 {
                     std::string str = gta5->read_str(g_pointers->LocalScriptsPTR, MAX_PATH, { i * 0x8, 0xD4 });
-                    std::cout << "Str Name: " << str << "\n";
-                    auto dbgptr = gta5->readMemory<int64_t>(g_pointers->LocalScriptsPTR, { i * 0x8, 0xB0 }) + 8 * 0;
-                    std::cout << "Ptr: " << dbgptr << "\n";
+                    std::cout << "Str Name: " << "[" << str << "]" << "\n";
                 }
             }
 
