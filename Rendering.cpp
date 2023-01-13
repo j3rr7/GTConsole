@@ -881,14 +881,14 @@ void Rendering::dx_menu()
 
         if (ImGui::BeginTabItem("Unsafe!")) // enjoy ban :D
         {
-            if (ImGui::Button("Orbital 500k"))
+            if (ImGui::Button("Refund Orbital 500k"))
             {
                 g_thread_pool->enqueue([] {
                     gta5->SG<int>(1968313, 1);
                     });
             }
 
-            if (ImGui::Button("Orbital 750k"))
+            if (ImGui::Button("Refund Orbital 750k"))
             {
                 g_thread_pool->enqueue([] {
                     gta5->SG<int>(1968313, 2);
